@@ -1,9 +1,0 @@
-﻿@inject NavigationManager Navigation
-
-@code {
-    protected override async Task OnInitializedAsync()
-    {
-        await Task.Delay(5000);//Delay de 5 segundos para pruebas (será sin delay en producción)
-        Navigation.NavigateTo("/login");
-    }
-}

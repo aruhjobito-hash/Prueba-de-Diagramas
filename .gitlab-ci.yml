@@ -1,0 +1,78 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^devel_/'
+      when: always
+    - when: never
+
+stages:
+  - restore
+  - build
+  - test
+  - sonarqube
+  - deploy
+
+variables:
+  SONAR_HOST_URL: "http://172.17.2.53:9000"
+  SONAR_TOKEN: "sqp_302c44af4a5bc27c2f7c2d05d1a9bb1008193391"
+  PROJECT_KEY: "ApiAppLeon"
+  
+  DOTNET_ROOT: "C:\\Program Files\\dotnet"
+  MSBUILD_DIR: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin"
+  SONARSCANNER_DIR: "C:\\SonarQube"
+
+
+restore:
+  stage: restore
+  script:
+    - dotnet clean
+    - dotnet restore --force-evaluate /p:TargetFramework=net6.0
+  tags:
+    - windows
+  only:
+    - /^devel_.*$/
+
+build:
+  stage: build
+  script:
+    - dotnet restore
+    - dotnet clean
+    - dotnet build --configuration Release --no-restore /p:TargetFramework=net6.0
+  tags:
+    - windows
+    - msbuild
+  only:
+    - /^devel_.*$/
+
+test:
+  stage: test
+  script:
+    - echo "Running basic validation tests"
+    - dotnet --version
+  tags:
+    - windows
+  only:
+    - /^devel_.*$/
+
+sonarqube-check:
+  stage: sonarqube
+  script:
+    - dotnet restore
+    - dotnet clean
+    - "C:\\SonarQube\\SonarScanner.MSBuild.exe begin /k:\"${PROJECT_KEY}\" /d:sonar.host.url=\"${SONAR_HOST_URL}\" /d:sonar.token=\"${SONAR_TOKEN}\" /d:sonar.branch.name=\"${CI_COMMIT_REF_NAME}\" /d:sonar.dotnet.version=6.0.36"
+    - dotnet build --configuration Release /p:TargetFramework=net6.0
+    - "C:\\SonarQube\\SonarScanner.MSBuild.exe end /d:sonar.token=\"${SONAR_TOKEN}\""
+  tags:
+    - windows
+    - sonarqube
+  only:
+    - /^devel_.*$/
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Prueba de stage Deploy"
+  tags:
+    - windows
+  only:
+    - /^devel_.*$/
+  when: manual  

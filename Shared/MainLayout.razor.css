@@ -1,8 +1,0 @@
-/* Your custom styles for the footer */
-.footer {
-    height: 80px !important; /* Using !important to override any conflicting styles */
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
