@@ -1,0 +1,1600 @@
+﻿@page "/PresupuestoInversiones"
+@inject HttpClient Http
+
+@using System.Linq
+
+
+@using Models.Sistema
+@using Clases.Sistema
+@using Controllers.Sistema
+
+@using System.Security.Claims
+@using LeonXIIICore
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserClaimsService ClaimsService
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        @*<div class="tabla-scroll">*@
+        <div class="portlet light portlet-fit">
+
+            <div class="header-grupo-plantilla">
+                <div class="caption mb-0">
+                    <i class="icon-settings"></i>
+                    <span class="titulo-seccion-plantilla">CONFIGURACIÓN DE PRESUPUESTO DE INVERSIONES</span>
+                </div>
+
+                <div class="actions">
+        
+                </div>
+            </div>
+
+            <div class="blazor-content portlet-body">
+
+                <div class="text-right mt-3 mb-3">
+                    <button class="btn green button-LEON" @onclick="AbrirModalNuevoProducto">
+                        Nuevo Producto <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+
+                <div class="portlet-body" style="display: flex;">
+                
+                    <input type="text" class="form-control search-input mr-2" placeholder="Buscar Concepto..." @oninput="AlBuscar" style="flex-grow: 1; width: 300px;" />
+
+                    <label for="monedaSeleccionada" class="mr-2" style="margin-left: 20px; margin-top: 20px;">Moneda:</label>
+                    <select class="form-control combo-select mr-2" id="monedaSeleccionada" value="@monedaSeleccionada"  @onchange="MonedaChange" style="width: 120px;">
+                            <option value="0" selected="@(monedaSeleccionada == "0")">Soles</option>
+                        <option value="1" selected="@(monedaSeleccionada == "1")">Dólares</option>
+                    </select>
+
+
+                    <label for="anioSeleccionado" class="mr-2" style="margin-left:20px; margin-top: 20px;">Año:</label>
+                    <select class="form-control combo-select mr-2" id="anioSeleccionado" @onchange="HandleYearChange" style="width: 100px;">
+                        @for (int anio = 2007; anio <= 2050; anio++)
+                        {
+                            <option value="@anio" selected="@(anio == anioSeleccionado)">@anio</option>
+                        }
+                    </select>
+
+                    <label for="agenciaSeleccionada" class="mr-2" style="margin-left: 20px; margin-top: 20px;">Agencia:</label>
+                    <select class="form-control combo-select mr-2" id="agenciaSeleccionada"
+                            value="@IdAgencia" @onchange="OnAgenciaChanged" style="width: 250px;">
+                        @if (listaAgencias != null)
+                        {
+                            @foreach (var agencia in listaAgencias)
+                            {
+                                <option value="@agencia.IdAgencia">@agencia.Agencia</option>
+                            }
+                        }
+                    </select>
+
+
+                    <label for="areaSeleccionada" class="mr-2" style="margin-left: 20px; margin-top: 20px;">Área:</label>
+                    <select class="form-control combo-select" id="areaSeleccionada"
+                            value="@IdArea" @onchange="OnAreaChanged" style="width: 350px;">
+                        @if (listaAreas != null)
+                        {
+                            @foreach (var area in listaAreas)
+                            {
+                                <option value="@area.IdArea">@area.Area</option>
+                            }
+                        }
+                    </select>
+
+
+                    <label style="min-width: 170px; white-space: nowrap; margin-left: 20px; margin-top: 20px;">
+                        Fecha Máxima Registro:
+                    </label>
+
+                    <input type="text" class="form-control search-input mr-2" style="width: 110px;" value="@fechaMaximaRegistro.ToString("dd/MM/yyyy")" disabled />
+
+                    @if (IdCargoIni == "03" && IdAreaIni == "28")
+                    {
+                        <button style="margin-top: 15px;border: 0;background-color: white;" @onclick="AbrirModalFecha">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                    }
+
+    
+                </div>
+            
+
+                <div class="portlet-body">
+                    @if (productosPaginados == null)
+                    {
+                        <p>Cargando productos...</p>
+                    }
+                    else
+                    {
+                        <table class="table table-striped table-hover table-bordered tabla-centro" id="tabla_productos">
+                            <thead>
+                                <tr>
+                                    <th>ID ARTICULO</th>
+                                    <th>CANTIDAD</th>
+                                    <th>NR</th>
+                                    <th class="hidden-column">IDUND</th>
+                                    <th>UND</th>
+                                    <th>CONCEPTO</th>
+                                    <th>ENERO</th>
+                                    <th>FEBRERO</th>
+                                    <th>MARZO</th>
+                                    <th>ABRIL</th>
+                                    <th>MAYO</th>
+                                    <th>JUNIO</th>
+                                    <th>JULIO</th>
+                                    <th>AGOSTO</th>
+                                    <th>SEPTIEMBRE</th>
+                                    <th>OCTUBRE</th>
+                                    <th>NOVIEMBRE</th>
+                                    <th>DICIEMBRE</th>
+                                    <th>TOTAL PRESUPUESTADO</th>
+                                    <th>ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var producto in productosPaginados)
+                                {
+                                    <tr style="@(producto.IdArticulo == "TOTAL" ? "background-color:#f2f2f2; font-weight:bold;" : "")">
+                                        <td>@producto.IdArticulo</td>
+                                        <td>@producto.Cant</td>
+                                        <td>@producto.NR</td>
+                                        <td class ="hidden-column">@producto.IdUnd</td>
+                                        <td>@producto.Und</td>
+                                        <td>@producto.Concepto</td>
+                                        <td>@producto.Enero.ToString("N2")</td>
+                                        <td>@producto.Febrero.ToString("N2")</td>
+                                        <td>@producto.Marzo.ToString("N2")</td>
+                                        <td>@producto.Abril.ToString("N2")</td>
+                                        <td>@producto.Mayo.ToString("N2")</td>
+                                        <td>@producto.Junio.ToString("N2")</td>
+                                        <td>@producto.Julio.ToString("N2")</td>
+                                        <td>@producto.Agosto.ToString("N2")</td>
+                                        <td>@producto.Septiembre.ToString("N2")</td>
+                                        <td>@producto.Octubre.ToString("N2")</td>
+                                        <td>@producto.Noviembre.ToString("N2")</td>
+                                        <td>@producto.Diciembre.ToString("N2")</td>
+                                        <td>@producto.TotalPresupuestado.ToString("N2")</td>
+
+                                        @if (producto.IdArticulo != "TOTAL")
+                                        {
+                                            <td class="center">
+                                                <div style="display: flex; gap: 4px;">
+                                                    <button class="btn btn-icon-only blue" @onclick="() => AbrirModalEditarProducto(producto)">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger" @onclick="() => EliminarArticulo(producto)">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <button @onclick="() => CargarPagina(1)" disabled="@(paginaActual == 1)">Primero</button>
+                            <button @onclick="() => CargarPagina(paginaActual - 1)" disabled="@(paginaActual == 1)">Anterior</button>
+                            <span>Página @paginaActual de @totalPaginas</span>
+                            <button @onclick="() => CargarPagina(paginaActual + 1)" disabled="@(paginaActual == totalPaginas)">Siguiente</button>
+                            <button @onclick="() => CargarPagina(totalPaginas)" disabled="@(paginaActual == totalPaginas)">Último</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@if (mostrarModalEditar)
+{
+    <div class="modal show" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5); display: flex !important; justify-content: center !important; align-items: center !important;">
+        <div class="modal-dialog modal-lg" style="width: 1600px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Artículo Presupuestado</h5>
+                    <button type="button" class="close" @onclick="CerrarModalEditar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3 mt-3">
+                        <div class="col-md-3">
+                            <label>Id Artículo</label>
+                            <input class="form-control" value="@productoSeleccionado?.IdArticulo" disabled />
+                        </div>
+                        <div class="col-md-2">
+                            <label>Unidad</label>
+                            <input class="form-control" value="@productoSeleccionado?.Und" disabled />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>Moneda</label>
+                            <select class="form-control" id="monedaSeleccionada" value="@monedaSeleccionada" @onchange="MonedaChange" disabled>
+                                <option value="0" selected="@(monedaSeleccionada == "0")">Soles</option>
+                                <option value="1" selected="@(monedaSeleccionada == "1")">Dólares</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>N: Nuevo | R: Repuesto</label>
+                            <select class="form-control" @bind="productoSeleccionado.NR">
+                                <option value="N">N</option>
+                                <option value="R">R</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label>Cantidad</label>
+                            <input class="form-control" type="number" @bind="productoSeleccionado.Cant" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 mt-3" style="margin-top:20px;">
+                        <div class="col-md-12">
+                            <label>Concepto</label>
+                            <input class="form-control" value="@productoSeleccionado.Concepto" readonly />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 mt-3" style="margin-top:20px;">
+                        <div class="col-md-12">
+                            <table class="table table-bordered table-striped tabla-centro">
+                                <thead>
+                                    <tr>
+                                        <th>ENERO</th>
+                                        <th>FEBRERO</th>
+                                        <th>MARZO</th>
+                                        <th>ABRIL</th>
+                                        <th>MAYO</th>
+                                        <th>JUNIO</th>
+                                        <th>JULIO</th>
+                                        <th>AGOSTO</th>
+                                        <th>SEPTIEMBRE</th>
+                                        <th>OCTUBRE</th>
+                                        <th>NOVIEMBRE</th>
+                                        <th>DICIEMBRE</th>
+                                        <th>TOTAL PRESUPUESTADO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Enero" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Febrero" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Marzo" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Abril" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Mayo" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Junio" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Julio" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Agosto" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Septiembre" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Octubre" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Noviembre" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="productoSeleccionado.Diciembre" @bind-value:event="oninput" /></td>
+                                        <td>
+                                            <input type="number" class="form-control" @bind="productoSeleccionado.TotalPresupuestado" disabled />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalEditar">Cancelar</button>
+                    <button class="btn btn-primary" @onclick="GuardarCambiosProducto">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@if (mostrarModalNuevo)
+{
+    <div class="modal show" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5); display: flex !important; justify-content: center !important; align-items: center !important; z-index:1040;">
+        <div class="modal-dialog modal-lg" style="width: 1600px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Artículo Inversiones</h5>
+                    <button type="button" class="close" @onclick="CerrarModalNuevo">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label>Buscar artículo</label>
+                            <div style="display: flex; gap: 5px;">
+                                <input class="form-control" style="width: 200px;" @bind="textoBusquedaArticulo" placeholder="Buscar artículo..." />
+                                <button class="btn btn-primary" @onclick="MostrarModalBusqueda">Buscar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 mt-3" style="margin-top: 20px">
+                        <div class="col-md-3">
+                            <label>Id Artículo</label>
+                            <input type="text" class="form-control" value="@ArticuloNuevo.IdArticulo" disabled />
+                        </div>
+                        <div class="col-md-2">
+                            <label>Unidad</label>
+                            <input type="text" class="form-control" value="@ArticuloNuevo.IdUnd" disabled />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>Moneda</label>
+                            <select class="form-control" id="monedaSeleccionada" value="@monedaSeleccionada" @onchange="MonedaChange">
+                                <option value="0" selected="@(monedaSeleccionada == "0")">Soles</option>
+                                <option value="1" selected="@(monedaSeleccionada == "1")">Dólares</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>N: Nuevo | R: Repuesto</label>
+                            <select class="form-control" @bind="ArticuloNuevo.NR">
+                                <option value="N">N</option>
+                                <option value="R">R</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label>Cantidad</label>
+                            <input class="form-control" type="number" @bind="ArticuloNuevo.Cant" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3" style="margin-top: 20px">
+                        <div class="col-md-12">
+                            <label>Concepto Seleccionado</label>
+                            <input class="form-control" value="@ArticuloNuevo?.Concepto" disabled />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 mt-3" style="margin-top:20px;">
+                        <div class="col-md-12">
+                            <table class="table table-bordered table-striped tabla-centro">
+                                <thead>
+                                    <tr>
+                                        <th>ENERO</th>
+                                        <th>FEBRERO</th>
+                                        <th>MARZO</th>
+                                        <th>ABRIL</th>
+                                        <th>MAYO</th>
+                                        <th>JUNIO</th>
+                                        <th>JULIO</th>
+                                        <th>AGOSTO</th>
+                                        <th>SEPTIEMBRE</th>
+                                        <th>OCTUBRE</th>
+                                        <th>NOVIEMBRE</th>
+                                        <th>DICIEMBRE</th>
+                                        <th>TOTAL PRESUPUESTADO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Enero" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Febrero" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Marzo" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Abril" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Mayo" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Junio" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Julio" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Agosto" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Septiembre" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Octubre" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Noviembre" @bind-value:event="oninput" /></td>
+                                        <td><input type="number" class="form-control" @bind-value="ArticuloNuevo.Diciembre" @bind-value:event="oninput" /></td>
+                                        <td>
+                                            <input type="number" class="form-control" @bind="ArticuloNuevo.TotalPresupuestado" disabled />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalNuevo">Cancelar</button>
+                    <button class="btn btn-primary" @onclick="GuardarNuevoProducto">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarModalAlerta)
+{
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5); z-index: 1050;">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 302px; max-height: 151px;">
+                <div class="modal-content rounded-4">
+                    <div class="modal-header @(esErrorAlerta ? "bg-danger" : "bg-green") text-white">
+                        <h5 class="modal-title">@tituloAlerta</h5>
+
+                        <button type="button" class="btn-close" @onclick="() => mostrarModalAlerta = false" style="border: none; background: none;"></button>
+                    </div>
+                    <div class="modal-body d-flex justify-content-center align-items-center" style="height: 100%;">
+                        <p class="text-center">@mensajeAlerta</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="() => mostrarModalAlerta = false">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+}
+
+
+@if (mostrarModalBusqueda)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5); z-index: 1060;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="margin-top: 150px; max-height: 700px; display: flex; flex-direction: column;">
+                <div class="modal-header">
+                    <h5 class="modal-title">Seleccionar Artículo</h5>
+                </div>
+                <div class="modal-body" style="overflow-y: auto;">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Artículo</th>
+                                <th>Unidad</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var art in listaFiltradaArticulos)
+                            {
+                                <tr>
+                                    <td>@art.Codigo</td>
+                                    <td>@art.Articulo</td>
+                                    <td>@art.UnidadMedida</td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm" @onclick="@(() => SeleccionarArticulo(art))">Seleccionar</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalBusqueda">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@if (mostrarModalFecha)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5); z-index: 1070;">
+        <div class="modal-dialog">
+            <div class="modal-content" style="margin-top: 200px;margin-left: 100px; width: 300px;">
+                <div class="modal-header">
+                    <h5 class="modal-title">Seleccionar Fecha</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="date" @bind="nuevaFecha" class="form-control" />
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelarEdicionFecha">Cancelar</button>
+                    <button class="btn btn-primary" @onclick="GuardarFecha">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+<style>
+
+    /* Ocultar */
+    .hidden-column {
+        display: none;
+    }
+
+    /* Modal */
+
+    .bg-green {
+        background-color: #B2FBA5;
+    }
+
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-body {
+        flex-grow: 1;
+    }
+
+    /* Estilos para combos */
+    .combo-select {
+        width: 50px; 
+        font-size: 16px; 
+        border-radius: 25px; 
+        border: 1px solid #ddd;
+        background-color: #f9f9f9;
+        transition: all 0.3s ease;
+        outline: none;
+        margin-left: 15px;
+        margin-top: 15px;
+    }
+
+    .combo-select:focus {
+        border-color: #6dc322;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    }
+
+    .combo-select:hover {
+        border-color: #6dc322;
+        background-color: #f0f0f0;
+    }
+
+    .tabla-scroll {
+    max-width: 1800px;
+    max-height: 1200px;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+</style>
+
+
+
+@code {
+
+    APILEON api = new();
+
+    private List<PresupuestoInversionesDBModel> listaPresupuesto = new();
+    private List<ArticuloDBModel> listaArticulos = new();
+    private List<AgenciasModel> listaAgencias = new(); 
+    private List<AreasModel> listaAreas = new();
+
+    private List<requestPresupuestosInversionesModel> ObtenerPresupuestoInversiones = new();
+
+    private string mensaje = "";
+    private DateTime fechaInicioVigencia;
+    private bool mostrarModal = false;
+    private string productoSeleccionadoId; 
+
+    private bool esEdicion = false;
+    private DateTime fechaInicioEditar;
+
+    private bool mostrarModalAlerta = false;
+    private string tituloAlerta = "";
+    private string mensajeAlerta = "";
+    private bool esErrorAlerta = false;  
+
+
+    private List<PresupuestoInversionesDBModel> productosFiltrados = new(); 
+    private List<PresupuestoInversionesDBModel> productosPaginados = new(); 
+
+    private int paginaActual = 1;
+    private int productosPorPagina = 50;
+    private int totalPaginas;
+
+    private string busqueda = string.Empty;
+
+    private int anioSeleccionado = DateTime.Now.Year;
+
+
+    private bool mostrarModalEditar = false;
+    private bool mostrarModalNuevo = false;
+
+    private PresupuestoInversionesDBModel productoSeleccionado = new();
+
+    private PresupuestosInversionesEditModel ArticuloAEditar = new();
+    private PresupuestosInversionesEditModel ArticuloNuevoR = new();
+
+    private PresupuestoInversionesDBModel ArticuloNuevo = new();
+
+    private List<ArticuloDBModel> listaFiltradaArticulos = new(); 
+
+    private string textoBusquedaArticulo = "";
+    private bool mostrarModalBusqueda = false;
+
+    private string monedaSeleccionada = "0"; 
+
+
+
+    private string IdUser = "";
+    private string IdAgencia = "01";
+    private string IdCargo = "";
+    private string IdArea = "";
+
+    private string IdCargoIni = "";
+    private string IdAreaIni = "";
+
+    private bool mostrarModalFecha = false;
+
+    private DateTime fechaMaximaRegistro = DateTime.Today; 
+    private DateTime nuevaFecha;
+
+    private void AbrirModalFecha()
+    {
+        nuevaFecha = fechaMaximaRegistro;
+        mostrarModalFecha = true;
+    }
+
+    private void CerrarModalFecha()
+    {
+        mostrarModalFecha = false;
+    }
+
+    private void CancelarEdicionFecha()
+    {
+        mostrarModalFecha = false;
+    }
+
+    private async void GuardarFecha()
+    {
+        fechaMaximaRegistro = nuevaFecha; 
+        await RegistrarFechaCierre();
+        mostrarModalFecha = false; 
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await ClaimsService.InitializeAsync();
+
+        IdUser = ClaimsService.GetDatoTrabajadorByIdUser("SIdUser");
+        //IdAgencia = ClaimsService.GetDatoTrabajadorByIdUser("SIdAgencia");
+        IdCargo = ClaimsService.GetDatoTrabajadorByIdUser("SIdCargo");
+        IdArea = ClaimsService.GetDatoTrabajadorByIdUser("SIdArea");
+
+        IdCargoIni = IdCargo;
+        IdAreaIni = IdArea;
+
+        await ObtenerComboAgencias();
+        await ObtenerComboAreas();
+        await ObtenerFechaCierre();
+        FiltrarYPaginar();
+    }
+
+    private async Task OnAgenciaChanged(ChangeEventArgs e)
+    {
+        IdAgencia = e.Value?.ToString();
+        listaPresupuesto.Clear();
+        await ObtenerFechaCierre();
+        FiltrarYPaginar();
+    }
+
+
+    private async Task OnAreaChanged(ChangeEventArgs e)
+    {
+        IdArea = e.Value?.ToString();
+        listaPresupuesto.Clear();
+        await ObtenerFechaCierre();
+        FiltrarYPaginar();
+    }
+
+    private async Task HandleYearChange(ChangeEventArgs e)
+    {
+
+        anioSeleccionado = int.Parse(e.Value.ToString());
+        listaPresupuesto.Clear();
+        await ObtenerFechaCierre();
+        FiltrarYPaginar();
+    }
+
+    private async Task MonedaChange(ChangeEventArgs e)
+    {
+        monedaSeleccionada = e.Value.ToString();
+        listaPresupuesto.Clear();
+        await ObtenerFechaCierre();
+        FiltrarYPaginar();    
+    }
+
+
+    private void FiltrarYPaginar()
+    {
+        productosFiltrados = string.IsNullOrWhiteSpace(busqueda)
+            ? listaPresupuesto
+            : listaPresupuesto.Where(p =>
+                !string.IsNullOrWhiteSpace(p.Concepto) &&
+                p.Concepto.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+              .ToList();
+
+        totalPaginas = (int)Math.Ceiling((double)productosFiltrados.Count / productosPorPagina);
+
+        if (paginaActual > totalPaginas)
+            paginaActual = totalPaginas;
+
+        if (paginaActual < 1)
+            paginaActual = 1;
+
+        productosPaginados = productosFiltrados
+            .Skip((paginaActual - 1) * productosPorPagina)
+            .Take(productosPorPagina)
+            .ToList();
+    }
+
+    private void AlBuscar(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString() ?? string.Empty;
+        paginaActual = 1;
+        FiltrarYPaginar();
+    }
+
+    private void CargarPagina(int pagina)
+    {
+        paginaActual = pagina;
+        FiltrarYPaginar(); 
+    }
+
+
+    private async Task CargarPresupuestoInversiones()
+    {
+
+        var ObtenerPresupuestoInversiones = new requestPresupuestosInversionesModel
+            {
+                Año = anioSeleccionado.ToString(),
+                IdAgencia = IdAgencia,
+                IdArea= IdArea,
+                TipMoneda=monedaSeleccionada
+
+    };
+
+        try
+        {
+            var response = await api.APILEONPOST<Respuesta<List<PresupuestoInversionesDBModel>>>("/api/Planeamiento/PresupuestosInversiones/ObtenerPresupuestoInversiones", ObtenerPresupuestoInversiones);
+
+            if (response != null && response.Exito == 1)
+            {
+                listaPresupuesto = response.Data;
+            }
+            else
+            {
+                mensaje = "No se pudieron obtener los productos ❌";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = "Error de conexión ❌";
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task CargarArticulo()
+    {
+        try
+        {
+            var resultado = await api.APILEONGET<Respuesta<List<ArticuloDBModel>>>("/api/Logistica/Articulos/ComboObtenerArticulos?tipoOperacion=5");
+
+            if (resultado != null && resultado.Exito == 1)
+            {
+                listaArticulos = resultado.Data;
+                mensaje = resultado.Mensaje;
+            }
+            else
+            {
+                mensaje = "No se pudieron obtener los grupos ❌";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = "Error de conexión ❌";
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+
+
+
+    private async void AbrirModalNuevoProducto()
+    {
+        ArticuloNuevo = new PresupuestoInversionesDBModel
+        {
+            IdArticulo = "",
+            Cant = 0,
+            NR = "N",
+            IdUnd= "",
+            Concepto="",
+            Enero = 0,
+            Febrero = 0,
+            Marzo = 0,
+            Abril = 0,
+            Mayo = 0,
+            Junio = 0,
+            Julio = 0,
+            Agosto = 0,
+            Septiembre = 0,
+            Octubre = 0,
+            Noviembre = 0,
+            Diciembre = 0,
+        };
+
+        mostrarModalNuevo = true;
+
+        textoBusquedaArticulo = ""; 
+
+        await CargarArticulo();
+
+        listaFiltradaArticulos = listaArticulos.ToList();
+
+        
+    }
+
+    private void AbrirModalEditarProducto(PresupuestoInversionesDBModel producto)
+    {
+        productoSeleccionado = new PresupuestoInversionesDBModel
+        {
+            IdArticulo = producto.IdArticulo,
+            Cant = producto.Cant,
+            NR = producto.NR,
+            IdUnd= producto.IdUnd,
+            Und = producto.Und,
+            Concepto = producto.Concepto,
+            Enero = producto.Enero,
+            Febrero = producto.Febrero,
+            Marzo = producto.Marzo,
+            Abril = producto.Abril,
+            Mayo = producto.Mayo,
+            Junio = producto.Junio,
+            Julio = producto.Julio,
+            Agosto = producto.Agosto,
+            Septiembre = producto.Septiembre,
+            Octubre = producto.Octubre,
+            Noviembre = producto.Noviembre,
+            Diciembre = producto.Diciembre,
+            TotalPresupuestado = producto.TotalPresupuestado
+        };
+
+
+        mostrarModalEditar = true;
+    }
+
+    private void CerrarModalEditar()
+    {
+        mostrarModalEditar = false;
+    }
+
+    private void CerrarModalNuevo()
+    {
+        mostrarModalNuevo = false;
+    }
+
+
+    private void ActualizarValorMes(string mes, object valor)
+    {
+        decimal valorDecimal = 0;
+        if (decimal.TryParse(valor?.ToString(), out valorDecimal))
+        {
+            switch (mes)
+            {
+                case "Enero":
+                    productoSeleccionado.Enero = valorDecimal;
+                    break;
+                case "Febrero":
+                    productoSeleccionado.Febrero = valorDecimal;
+                    break;
+                case "Marzo":
+                    productoSeleccionado.Marzo = valorDecimal;
+                    break;
+                case "Abril":
+                    productoSeleccionado.Abril = valorDecimal;
+                    break;
+                case "Mayo":
+                    productoSeleccionado.Mayo = valorDecimal;
+                    break;
+                case "Junio":
+                    productoSeleccionado.Junio = valorDecimal;
+                    break;
+                case "Julio":
+                    productoSeleccionado.Julio = valorDecimal;
+                    break;
+                case "Agosto":
+                    productoSeleccionado.Agosto = valorDecimal;
+                    break;
+                case "Septiembre":
+                    productoSeleccionado.Septiembre = valorDecimal;
+                    break;
+                case "Octubre":
+                    productoSeleccionado.Octubre = valorDecimal;
+                    break;
+                case "Noviembre":
+                    productoSeleccionado.Noviembre = valorDecimal;
+                    break;
+                case "Diciembre":
+                    productoSeleccionado.Diciembre = valorDecimal;
+                    break;
+            }
+            CalcularTotal();
+        }
+    }
+
+    private void CalcularTotal()
+    {
+        productoSeleccionado.TotalPresupuestado =
+            productoSeleccionado.Enero +
+            productoSeleccionado.Febrero +
+            productoSeleccionado.Marzo +
+            productoSeleccionado.Abril +
+            productoSeleccionado.Mayo +
+            productoSeleccionado.Junio +
+            productoSeleccionado.Julio +
+            productoSeleccionado.Agosto +
+            productoSeleccionado.Septiembre +
+            productoSeleccionado.Octubre +
+            productoSeleccionado.Noviembre +
+            productoSeleccionado.Diciembre;
+    }
+
+    private void MostrarAlerta(string titulo, string mensaje)
+    {
+        tituloAlerta = titulo;
+        mensajeAlerta = mensaje;
+        mostrarModalAlerta = true;
+        StateHasChanged();
+    }
+
+    private async Task GuardarCambiosProducto()
+    {
+
+        ArticuloAEditar = new PresupuestosInversionesEditModel
+        {
+                IdArticulo = productoSeleccionado.IdArticulo,
+                IdAgencia = IdAgencia,
+                IdArea = IdArea,
+                Año = anioSeleccionado.ToString(),
+                IdUnd = productoSeleccionado.IdUnd,
+                Cant = productoSeleccionado.Cant,
+                NR = productoSeleccionado.NR,
+                Enero = productoSeleccionado.Enero,
+                Febrero = productoSeleccionado.Febrero,
+                Marzo = productoSeleccionado.Marzo,
+                Abril = productoSeleccionado.Abril,
+                Mayo = productoSeleccionado.Mayo,
+                Junio = productoSeleccionado.Junio,
+                Julio = productoSeleccionado.Julio,
+                Agosto = productoSeleccionado.Agosto,
+                Septiembre = productoSeleccionado.Septiembre,
+                Octubre = productoSeleccionado.Octubre,
+                Noviembre = productoSeleccionado.Noviembre,
+                Diciembre = productoSeleccionado.Diciembre,
+                IdUser = IdUser,
+                Activo = "1",
+                TipMoneda = monedaSeleccionada
+        };
+
+        try
+        {
+            var api = new APILEON();
+
+            var resultado = await api.APILEONPUT<Respuesta<string>>("/api/Planeamiento/PresupuestosInversiones/EditarArticuloInversiones", ArticuloAEditar);
+
+            if (resultado != null && resultado.Exito == 1)
+            {
+                esErrorAlerta = false;
+                MostrarAlerta("Éxito", "Artículo de inversión actualizado correctamente ✅");
+                
+            }
+            else
+            {
+                esErrorAlerta = true;
+                MostrarAlerta("Error", "Error al actualizar Artículo ❌");
+            }
+        }
+        catch (Exception ex)
+        {
+            esErrorAlerta = true;
+            MostrarAlerta("Error de conexión", "Error de conexión ❌");
+            
+            Console.WriteLine(ex.Message);
+        }
+
+        mostrarModalEditar = false;
+        await CargarPresupuestoInversiones();
+        FiltrarYPaginar();
+
+
+        CerrarModalEditar();
+    }
+
+    private async Task GuardarNuevoProducto()
+    {
+
+        ArticuloNuevoR = new PresupuestosInversionesEditModel
+        {
+                IdArticulo = ArticuloNuevo.IdArticulo,
+                IdAgencia = IdAgencia,
+                IdArea = IdArea,
+                Año = anioSeleccionado.ToString(),
+                IdUnd = ArticuloNuevo.IdUnd,
+                Cant = ArticuloNuevo.Cant,
+                NR = ArticuloNuevo.NR,
+                Enero = ArticuloNuevo.Enero,
+                Febrero = ArticuloNuevo.Febrero,
+                Marzo = ArticuloNuevo.Marzo,
+                Abril = ArticuloNuevo.Abril,
+                Mayo = ArticuloNuevo.Mayo,
+                Junio = ArticuloNuevo.Junio,
+                Julio = ArticuloNuevo.Julio,
+                Agosto = ArticuloNuevo.Agosto,
+                Septiembre = ArticuloNuevo.Septiembre,
+                Octubre = ArticuloNuevo.Octubre,
+                Noviembre = ArticuloNuevo.Noviembre,
+                Diciembre = ArticuloNuevo.Diciembre,
+                IdUser = IdUser,
+                Activo = "1",
+                TipMoneda = monedaSeleccionada
+        };
+
+        try
+        {
+            var api = new APILEON();
+
+            var resultado = await api.APILEONPOST<Respuesta<string>>("/api/Planeamiento/PresupuestosInversiones/RegistrarArticuloInversiones", ArticuloNuevoR);
+
+            if (resultado != null && resultado.Exito == 1)
+            {
+                esErrorAlerta = false;
+                MostrarAlerta("Éxito", "Artículo de inversión registrado correctamente ✅");
+                
+            }
+            else
+            {
+                esErrorAlerta = true;
+                MostrarAlerta("Error", "Error al registrar Artículo ❌");
+                
+            }
+        }
+        catch (Exception ex)
+        {
+            esErrorAlerta = true;
+            MostrarAlerta("Error de conexión", "Error de conexión ❌");
+            
+            Console.WriteLine(ex.Message);
+        }
+
+        mostrarModalNuevo = false;
+        await CargarPresupuestoInversiones();
+        FiltrarYPaginar();
+
+
+        CerrarModalNuevo();
+    }
+
+    private async Task EliminarArticulo(PresupuestoInversionesDBModel articulo)
+    {
+        try
+        {
+            var articuloAEliminar = new PresupuestosUpdateModel
+            {
+                    IdArticulo = articulo.IdArticulo,
+                    IdAgencia = IdAgencia,
+                    IdArea=IdArea,
+                    Año = anioSeleccionado.ToString(),
+                    IdUser= IdUser,
+                    TipMoneda = monedaSeleccionada
+            };
+
+            var api = new APILEON();
+
+            var response = await api.APILEONPUT<Respuesta<string>>("/api/Planeamiento/PresupuestosInversiones/DesactivarArticuloInversiones", articuloAEliminar);
+
+            if (response.Exito == 1)
+            {
+                esErrorAlerta = false;
+                MostrarAlerta("Éxito", "Artículo eliminado correctamente ✅");
+                
+            }
+            else
+            {
+                esErrorAlerta = true;
+                MostrarAlerta("Error", "Error al eliminar Artículo ❌");
+                
+            }
+        }
+        catch (Exception ex)
+        {
+            esErrorAlerta = true;
+            MostrarAlerta("Error de conexión", "Error de conexión ❌");
+            
+            Console.WriteLine(ex.Message);
+        }
+
+        await CargarPresupuestoInversiones();
+        FiltrarYPaginar();
+    }
+
+
+    private async Task ObtenerComboAgencias()
+    {
+        try
+        {
+            var request = new RequestFiltroCombos
+                {
+                    IdCargo = IdCargo,
+                    IdArea = IdArea,
+                    IdAgencia = IdAgencia
+                };
+
+            var resultado = await api.APILEONPOST<Respuesta<List<AgenciasModel>>>("/api/Planeamiento/PresupuestosInversiones/ObtenerComboAgencias", request);
+
+            if (resultado != null && resultado.Exito == 1)
+            {
+                listaAgencias = resultado.Data;
+                mensaje = resultado.Mensaje;
+            }
+            else
+            {
+                mensaje = "No se pudieron obtener las agencias ❌";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = "Error de conexión ❌";
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task ObtenerComboAreas()
+    {
+        try
+        {
+            var request = new RequestFiltroCombos
+                {
+                    IdCargo = IdCargo,
+                    IdArea = IdArea,
+                    IdAgencia = IdAgencia
+                };
+
+            var resultado = await api.APILEONPOST<Respuesta<List<AreasModel>>>("/api/Planeamiento/PresupuestosInversiones/ObtenerComboAreas", request);
+
+            if (resultado != null && resultado.Exito == 1)
+            {
+                listaAreas = resultado.Data;
+                mensaje = resultado.Mensaje;
+            }
+            else
+            {
+                mensaje = "No se pudieron obtener las agencias ❌";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = "Error de conexión ❌";
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private void MostrarModalBusqueda()
+    {
+        FiltrarArticulos();
+        mostrarModalBusqueda = true;
+    }
+
+    private void CerrarModalBusqueda()
+    {
+        mostrarModalBusqueda = false;
+    }
+
+    private void FiltrarArticulos()
+    {
+        if (!string.IsNullOrWhiteSpace(textoBusquedaArticulo))
+        {
+            listaFiltradaArticulos = listaArticulos
+                .Where(a => a.Articulo.Contains(textoBusquedaArticulo, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        else
+        {
+            listaFiltradaArticulos = listaArticulos.ToList();
+        }
+    }
+
+    private void SeleccionarArticulo(ArticuloDBModel art)
+    {
+        ArticuloNuevo.IdArticulo = art.Codigo;
+        ArticuloNuevo.IdUnd = art.IdUniMed;
+        ArticuloNuevo.Und = art.UnidadMedida;
+        ArticuloNuevo.Concepto = art.Articulo;
+
+        textoBusquedaArticulo = string.Empty;
+        listaFiltradaArticulos.Clear();
+        mostrarModalBusqueda = false;
+    }
+
+
+    private async Task ObtenerFechaCierre()
+    {
+        try
+        {
+            var request = new PresupuestosFechaCierreModel
+                {
+                    Año = anioSeleccionado.ToString(),
+                    IdUser = "",         
+                    Fecha = ""          
+                };
+
+            var resultado = await api.APILEONPOST<Respuesta<List<PresupuestosFechaCierreModel>>>("/api/Planeamiento/PresupuestosInversiones/ObtenerFechaCierre", request);
+
+            if (resultado != null && resultado.Exito == 1 && resultado.Data.Any())
+            {
+                var fechaStr = resultado.Data.First().Fecha;
+
+                if (!string.IsNullOrWhiteSpace(fechaStr))
+                {
+                    try
+                    {
+                        fechaMaximaRegistro = Convert.ToDateTime(fechaStr);
+                        await CargarPresupuestoInversiones();
+                        esErrorAlerta = false;
+                    }
+                    catch
+                    {
+                        esErrorAlerta = true;
+                        MostrarAlerta("Error", "La fecha obtenida no tiene un formato válido.");
+                        
+                    }
+                }
+
+            }
+            else
+            {
+                fechaMaximaRegistro = new DateTime(1999, 1, 1);
+                esErrorAlerta = true;
+                MostrarAlerta("Advertencia", "No se registró fecha cierre de presupuesto, comunicarse con el área de planeamiento.");
+                
+            }
+        }
+        catch (Exception ex)
+        {
+            esErrorAlerta = true;
+            MostrarAlerta("Error", "Error de conexión con el servidor.");
+            
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task RegistrarFechaCierre()
+    {
+        try
+        {
+            var request = new PresupuestosFechaCierreModel
+                {
+                    Año = anioSeleccionado.ToString(),
+                    IdUser = IdUser,
+                    Fecha = nuevaFecha.ToString("dd/MM/yyyy")
+                };
+
+            var resultado = await api.APILEONPOST<Respuesta<List<PresupuestosFechaCierreModel>>>("/api/Planeamiento/PresupuestosInversiones/RegistrarFechaCierre", request);
+
+            if (resultado != null && resultado.Exito == 1)
+            {
+                try
+                {
+                    fechaMaximaRegistro = nuevaFecha;
+                    mostrarModalFecha = false; 
+                    esErrorAlerta = false;
+                    MostrarAlerta("Éxito", "Fecha cierre registrada correctamente."); 
+                    await CargarPresupuestoInversiones();
+                    
+                }
+                catch
+                {
+                    esErrorAlerta = true;
+                    MostrarAlerta("Error", "La fecha obtenida no tiene un formato válido.");
+                    
+                }
+            }
+            else
+            {
+                esErrorAlerta = true;
+                MostrarAlerta("Advertencia", "No se pudo registrar fecha cierre de presupuesto.");
+                
+            }
+        }
+        catch (Exception ex)
+        {
+            esErrorAlerta = true;
+            MostrarAlerta("Error", "Error de conexión con el servidor.");
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+
+
+
+    public class AgenciasModel
+    {
+        public string IdAgencia { get; set; }
+        public string Agencia { get; set; }
+
+    }
+
+    public class AreasModel
+    {
+        public string IdArea { get; set; }
+        public string Area { get; set; }
+        public string IdAgencia { get; set; }
+
+    }
+
+    public class RequestFiltroCombos
+    {
+        public string? IdCargo { get; set; }
+        public string? IdArea { get; set; }
+        public string? IdAgencia { get; set; }
+    }
+
+    public class ArticuloDBModel
+    {
+        public string Codigo { get; set; }
+
+        public string IdUniMed { get; set; }
+
+        public string UnidadMedida { get; set; }
+
+        public string Articulo { get; set; }
+
+        public string AfectoIGV { get; set; }
+
+        public string IdGrupo { get; set; }
+
+        public string Grupo { get; set; }
+
+        public string CtaContable { get; set; }
+
+        public string AfectoKardex { get; set; }
+
+        public string Usuario { get; set; }
+
+        public string FechaRegistro { get; set; }
+
+        public string Activo { get; set; }
+    }
+
+    public class requestPresupuestosInversionesModel
+    {
+            
+        public string Año { get; set; }
+
+        public string IdAgencia { get; set; }
+
+        public string IdArea { get; set; }
+
+        public string TipMoneda { get; set; }
+
+    }
+
+
+    public class PresupuestoInversionesDBModel
+    {
+        public string IdArticulo { get; set; }
+        public int Cant { get; set; }
+        public string NR { get; set; }
+        public string IdUnd { get; set; }
+        public string Und { get; set; }
+        public string Concepto { get; set; }
+
+        private decimal _enero;
+        public decimal Enero
+        {
+            get => _enero;
+            set
+            {
+                _enero = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _febrero;
+        public decimal Febrero
+        {
+            get => _febrero;
+            set
+            {
+                _febrero = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _marzo;
+        public decimal Marzo
+        {
+            get => _marzo;
+            set
+            {
+                _marzo = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _abril;
+        public decimal Abril
+        {
+            get => _abril;
+            set
+            {
+                _abril = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _mayo;
+        public decimal Mayo
+        {
+            get => _mayo;
+            set
+            {
+                _mayo = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _junio;
+        public decimal Junio
+        {
+            get => _junio;
+            set
+            {
+                _junio = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _julio;
+        public decimal Julio
+        {
+            get => _julio;
+            set
+            {
+                _julio = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _agosto;
+        public decimal Agosto
+        {
+            get => _agosto;
+            set
+            {
+                _agosto = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _septiembre;
+        public decimal Septiembre
+        {
+            get => _septiembre;
+            set
+            {
+                _septiembre = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _octubre;
+        public decimal Octubre
+        {
+            get => _octubre;
+            set
+            {
+                _octubre = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _noviembre;
+        public decimal Noviembre
+        {
+            get => _noviembre;
+            set
+            {
+                _noviembre = value;
+                CalcularTotal();
+            }
+        }
+
+        private decimal _diciembre;
+        public decimal Diciembre
+        {
+            get => _diciembre;
+            set
+            {
+                _diciembre = value;
+                CalcularTotal();
+            }
+        }
+
+        public decimal TotalPresupuestado { get; set; }
+
+        public void CalcularTotal()
+        {
+            TotalPresupuestado = Enero + Febrero + Marzo + Abril + Mayo + Junio + Julio + Agosto + Septiembre + Octubre + Noviembre + Diciembre;
+        }
+    }
+
+
+    public class PresupuestosInversionesEditModel
+    {
+        public string IdArticulo { get; set; }
+
+        public string IdAgencia { get; set; }
+
+        public string IdArea { get; set; }
+
+        public string Año { get; set; }
+
+        public string IdUnd { get; set; }
+
+        public int Cant { get; set; }
+
+        public string NR { get; set; }
+
+        public decimal Enero { get; set; }
+
+        public decimal Febrero { get; set; }
+
+        public decimal Marzo { get; set; }
+
+        public decimal Abril { get; set; }
+
+        public decimal Mayo { get; set; }
+
+        public decimal Junio { get; set; }
+
+        public decimal Julio { get; set; }
+
+        public decimal Agosto { get; set; }
+
+        public decimal Septiembre { get; set; }
+
+        public decimal Octubre { get; set; }
+
+        public decimal Noviembre { get; set; }
+
+        public decimal Diciembre { get; set; }
+
+        public string IdUser { get; set; }
+
+        public string Activo { get; set; }
+
+        public string TipMoneda { get; set; }
+    }
+
+    public class PresupuestosUpdateModel
+    {
+        public string IdArticulo { get; set; }
+
+        public string IdAgencia { get; set; }
+
+        public string IdArea { get; set; }
+
+        public string Año { get; set; }
+
+        public string IdUser { get; set; }
+
+        public string TipMoneda { get; set; }
+    }
+
+    public class PresupuestosFechaCierreModel
+    {
+        public string Año { get; set; }
+
+        public string IdUser { get; set; }
+
+        public string Fecha { get; set; }
+
+    }
+
+}

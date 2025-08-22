@@ -1,0 +1,467 @@
+﻿@page "/Pensiones"
+@using Models.Configuracion
+@using Clases.Sistema
+@inject HttpClient Http
+@inherits MainLayout
+@using System.Security.Claims
+@using LeonXIIICore
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserClaimsService ClaimsService
+@inject LeonXIIICore.Controllers.Configuracion.PensionesController PensionService
+@inject IJSRuntime JSRuntime
+@* @using LeonXIIICore.Models.Sistema *@
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light portlet-fit">
+            <div class="header-grupo-plantilla">
+                <div class="header-content">
+                    <div class="caption mb-0">
+                        <i class="icon-settings"></i>
+                        <span class="titulo-seccion-plantilla">
+                            Lista de Pensiones
+                        </span>
+                    </div>
+                </div>
+
+                <div class="header-content">
+                    <div class="actions">
+                        @* <button class="btn green">
+                            Nuevo
+                            <i class="fa fa-plus"></i>
+                        </button>*@
+                    </div>
+                </div>
+            </div>
+            <div class="blazor-content portlet-body">
+                <div class="portlet-body">
+                    <div class="toolbar-search">
+                        <div class="floating-label">
+                            <input type="search" class="mat-input" id="buscarArticulo" placeholder=" " />
+                            <label for="buscarArticulo">Buscar</label>
+                        </div>
+                        <div class="toolbar-actions">
+                            <button class="btnbla blazor-button-outline" title="Actualizar">
+                                <i class="fa fa-refresh"></i>
+                            </button>
+                            <span class="toolbar-label">Actualizar</span>
+                            @* <button class="icon-btn" title="Filtros">
+                                <i class="fa fa-filter"></i>
+                            </button>
+                            <span class="toolbar-label">Filtros</span> *@
+                            <button type="button" class="btnbla blazor-button-outline primary" @onclick="ShowCreateModal">
+                                <i class="fa fa-plus"></i> Nueva Área
+                            </button>
+                        </div>
+                    </div>
+
+
+                        <div class="portlet-body">
+                        <div class="tabla-contenedor">
+                            @* <div id="tabla-pensiones-html" style="display:none"> *@
+                            <table class="blazor-tabla-requerimientos" id="sample_1" role="grid" aria-describedby="sample_1_info">
+                                    <thead>
+                                        <tr >
+                                            <th >Id Pension</th>
+                                            <th >Pension</th>
+                                            <th >Monto CV</th>
+                                            <th >Monto CM</th>
+                                            <th >Monto AP</th>
+                                            <th >Monto SPS</th>
+                                            <th >Monto SNP</th>
+                                            <th >Monto Max SPS</th>
+                                            <th >Fecha Inicio</th>
+                                            <th >Estado</th>
+                                            <th >Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="mdc-data-table__content">
+                                        @foreach (var ccost in Pension)
+                                        {
+                                            <tr >
+                                                <td >@ccost.IdPension</td>
+                                                <td >@ccost.PensNombre</td>
+                                                <td >@ccost.MontoCV</td>
+                                                <td >@ccost.MontoCM</td>
+                                                <td >@ccost.MontoAP</td>
+                                                <td >@ccost.MontoSPS</td>
+                                                <td >@ccost.MontoSNP</td>
+                                                <td >@ccost.MontoMaxSPS</td>
+                                                <td >@ccost.PensInicio.ToString("dd/MM/yyyy")</td>
+                                                <td >
+                                                    <div class="acciones-btns">
+                                                        @((MarkupString)(ccost.PensActivo == "0"
+                                                        ? "<span class=\"label label-danger\">Inactivo</span>"
+                                                        : "<span class=\"label label-success\">Activo</span>"))
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                <div class="acciones-btns">
+                                                    <button class="btn btn-outline btn-circle btn blue-hoki" @onclick="() => ShowEditModal(ccost)">
+                                                        <i class="fa fa-edit"></i> Edit
+                                                    </button>
+                                                    @if (@ccost.PensActivo == "1")
+                                                    {
+                                                        <button type="button" @onclick="() => ShowOnOffModal(ccost)" class="btn btn-outline btn-circle dark btn-sm red">
+                                                            <i class="fa fa-trash-o"></i> Desactivar
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="button" @onclick="() => ShowOnOffModal(ccost)" class="btn btn-outline btn-circle dark btn-sm green-jungle">
+                                                            <i class="fa fa-trash-o"></i> Activar
+                                                        </button>
+                                                    }
+                                                    @*  <button class="btn btn-outline btn-circle dark btn-sm black" @onclick="() => DeleteCargo(ccost)">
+                                                        <i class="fa fa-trash-o"></i> Eliminar
+                                                    </button> *@
+                                                </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (isEditModalVisible)
+{
+    <div id="DocModal" class="modal show" role="dialog" style="background-color: rgba(0,0,0,0.5);z-index: 10051;">
+        <div class="modal-dialog" style="width:800px !important">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @onclick="HideEditModal">×</button>
+                    <h4 class="modal-title">@modalTitle</h4>
+                </div>
+                <div class="modal-body">
+                    @* <div class="row"> *@
+                        <div class="col-md-12">
+                            <div class="form-group">
+                            <label for="operacion">Codigo de Pension</label>
+                            <input type="text" id="Codigo" class="form-control" @bind="SelectedPension.IdPension" style="border: 2px solid #bdbdbd;" disabled/>
+                        </div>
+                        <div class="form-group">
+                          @*   <label for="operacion">Pension</label>
+                            <input type="text" id="Codigo" class="form-control" @bind="SelectedPension.PensNombre" /> *@
+                            <div class="floating-label">
+                                <input type="search" class="mat-inputM" placeholder=" " @bind="SelectedPension.PensNombre" />
+                                <label for="buscarArticulo">Pension</label>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                @* <label for="operacion">Monto CV</label>
+                                <input type="number" id="MontoCV" class="form-control mb-2" @bind="SelectedPension.MontoCV" /> *@
+                                <div class="floating-label">
+                                <input type="number" class="mat-inputM"
+                                       placeholder=" "
+                                       value="@(SelectedPension.MontoCV == 0 ? string.Empty : SelectedPension.MontoCV.ToString())"
+                                       @oninput="e => SelectedPension.MontoCV = string.IsNullOrWhiteSpace(e.Value?.ToString()) ? 0 : decimal.Parse(e.Value.ToString())" />
+                                <label>Monto CV</label>
+                                </div>
+                            </div>
+                           
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <div class="floating-label">
+                                <input type="number" class="mat-inputM" placeholder=" "
+                                       value="@(SelectedPension.MontoCM == 0 ? string.Empty : SelectedPension.MontoCM.ToString())"
+                                       @oninput="e => SelectedPension.MontoCM = string.IsNullOrWhiteSpace(e.Value?.ToString()) ? 0 : decimal.Parse(e.Value.ToString())" />
+                                    <label for="buscarArticulo">Monto CM</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <div class="floating-label">
+                                <input type="number" class="mat-inputM" placeholder=" "
+                                       value="@(SelectedPension.MontoAP == 0 ? string.Empty : SelectedPension.MontoAP.ToString())"
+                                       @oninput="e => SelectedPension.MontoAP = string.IsNullOrWhiteSpace(e.Value?.ToString()) ? 0 : decimal.Parse(e.Value.ToString())" />
+                                    <label for="buscarArticulo">Monto AP</label>
+                                </div>
+                            </div>
+                           
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <div class="floating-label">
+                                <input type="number" class="mat-inputM" placeholder=" "
+                                       value="@(SelectedPension.MontoSPS == 0 ? string.Empty : SelectedPension.MontoSPS.ToString())"
+                                       @oninput="e => SelectedPension.MontoSPS = string.IsNullOrWhiteSpace(e.Value?.ToString()) ? 0 : decimal.Parse(e.Value.ToString())" />
+                                    <label for="buscarArticulo">Monto SPS</label>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        <div class="col-md-3">
+                             <div class="form-group">
+                                <div class="floating-label">
+                                <input type="number" class="mat-inputM" placeholder=" "
+                                       value="@(SelectedPension.MontoSNP == 0 ? string.Empty : SelectedPension.MontoSNP.ToString())"
+                                       @oninput="e => SelectedPension.MontoSNP = string.IsNullOrWhiteSpace(e.Value?.ToString()) ? 0 : decimal.Parse(e.Value.ToString())" />
+                                    <label for="buscarArticulo">Monto SNP</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <div class="floating-label">
+                                <input type="number" class="mat-inputM" placeholder=" "
+                                       value="@(SelectedPension.MontoMaxSPS == 0 ? string.Empty : SelectedPension.MontoMaxSPS.ToString())"
+                                       @oninput="e => SelectedPension.MontoMaxSPS = string.IsNullOrWhiteSpace(e.Value?.ToString()) ? 0 : decimal.Parse(e.Value.ToString())" />
+                                    <label for="buscarArticulo">Monto Max SPS</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                             <div class="form-group">
+                                @* <label for="operacion">Fecha Inicio</label>
+                                <input type="date" id="FechaInicio" class="form-control" @bind="SelectedPension.PensInicio" /> *@
+                                <div class="floating-label">
+                                     <input type="date" class="mat-inputM" placeholder=" " @bind="SelectedPension.PensInicio" />
+                                    <label for="buscarArticulo">Fecha Inicio</label>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    @* </div> *@
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn red" @onclick="SaveChanges">Registrar</button>
+                    <button type="button" class="btn dark btn-outline" @onclick="HideEditModal">Salir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (isMensConfVisible)
+{
+    <div class="modal fade in" id="basic" tabindex="-1" role="basic" aria-hidden="true" style="display: block; padding-right: 15px;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button @onclick="HideMensConfModal" type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmación</h4>
+                </div>
+                <div class="modal-body"> ¿Estás seguro de que deseas @(SelectedPension.PensActivo == "0" ? "desactivar" : "activar") el centro de costo del área ? </div>
+                <div class="modal-footer">
+                    <button @onclick="OnOffPensionAsync" type="button" class="btn btn-outline btn-circle btn-sm blue" data-dismiss="modal">Sí, @(SelectedPension.PensActivo == "0" ? "Desactivar" : "Activar")</button>
+                    <button @onclick="HideMensConfModal" type="button" class="btn btn-outline btn-circle dark btn-sm red" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    private string dato;
+    private bool isEditModalVisible = false;
+    private bool isMensConfVisible = false;
+    private int currentOption = 1; // 1 para crear, 2 para editar, 3 para eliminar
+    private string modalTitle = "Editar Cargo";
+    private List<PensionDBModel> Pension = new List<PensionDBModel>();
+    private requestPensionModel SelectedPension = new requestPensionModel();
+    private string message = string.Empty;
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+    //         await JSRuntime.InvokeVoidAsync("loadAngularCss");
+    //     }
+    // }
+
+    // public async ValueTask DisposeAsync()
+    // {
+    //     await JSRuntime.InvokeVoidAsync("removeAngularCss");
+    // }
+    protected override async Task OnInitializedAsync()
+    {
+        await ClaimsService.InitializeAsync();
+        dato = ClaimsService.GetDatoTrabajadorByIdUser("SidArea");
+        await LoadPensiones();
+        StateHasChanged(); // <-- Fuerza el refresco para que el botón se deshabilite correctamente
+    }
+
+    private async Task LoadPensiones()
+    {
+        try
+        {
+            Pension = await PensionService.LoadPensionesDataAsync();
+            if (Pension == null)
+            {
+                Pension = new List<PensionDBModel>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar las agencias: {ex.Message}");
+            Pension = new List<PensionDBModel>();
+        }
+    }
+
+
+
+    private void HideEditModal()
+    {
+        isEditModalVisible = false;
+    }
+    private async Task ShowCreateModal()
+    {
+        SelectedPension = new requestPensionModel
+            {
+                IdPension = "00",
+                PensNombre = string.Empty,
+                MontoCV = 0,
+                MontoAP = 0,
+                MontoSPS = 0,
+                MontoSNP=0,
+                MontoMaxSPS = 0,
+                MontoCM=0,
+                PensInicio = DateTime.Now,
+                IdUser = "SerVer",
+                PensActivo="1"
+
+            };
+        modalTitle = "Crear Pension";
+        isEditModalVisible = true;
+        currentOption = 1;
+    }
+    private void ShowEditModal(PensionDBModel model)
+    {
+        SelectedPension = new requestPensionModel
+            {
+                IdPension = model.IdPension,
+                PensNombre = model.PensNombre,
+                MontoCV = model.MontoCV,
+                MontoAP = model.MontoAP,
+                MontoSPS = model.MontoSPS,
+                MontoSNP = model.MontoSNP,
+                MontoMaxSPS = model.MontoMaxSPS,
+                MontoCM = model.MontoCM,
+                PensInicio = model.PensInicio,
+                IdUser = "SerVer",
+                PensActivo = model.PensActivo
+
+            };
+        modalTitle = "Editar Pension";
+        isEditModalVisible = true;
+        currentOption = 2; // Opción para editar
+    }
+    private async Task SaveChanges()
+    {
+        var request = new requestPensionModel
+            {
+                IdPension = SelectedPension.IdPension,
+                PensNombre = SelectedPension.PensNombre,
+                MontoCV = SelectedPension.MontoCV,
+                MontoAP = SelectedPension.MontoAP,
+                MontoSPS = SelectedPension.MontoSPS,
+                MontoSNP = SelectedPension.MontoSNP,
+                MontoMaxSPS = SelectedPension.MontoMaxSPS,
+                MontoCM = SelectedPension.MontoCM,
+                PensInicio = SelectedPension.PensInicio,
+                IdUser = "SerVer",
+                PensActivo = SelectedPension.PensActivo
+            };
+
+        var PensionData = await PensionService.Create_Update_Delete_PensionDataAsync(request, currentOption);
+        var firstPensionData = PensionData.FirstOrDefault();
+        if (firstPensionData != null && firstPensionData.bEstado == "1")
+        {
+            if (currentOption == 1) // Insertar
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Pension creado exitosamente.");
+            }
+            else if (currentOption == 2) // Actualizar
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Pension actualizado exitosamente.");
+            }
+
+        }
+        else
+        {
+            message = currentOption == 1 ? "Error al crear el registro" : currentOption == 2 ? "Error al actualizar el registro" : "Error al eliminar el registro";
+            await JSRuntime.InvokeVoidAsync("alert", message);
+        }
+        await LoadPensiones();
+        HideEditModal();
+    }
+    private async Task ShowOnOffModal(PensionDBModel Pension)
+    {
+        SelectedPension = new requestPensionModel
+            {
+                IdPension = SelectedPension.IdPension,
+                PensNombre = SelectedPension.PensNombre,
+                MontoCV = SelectedPension.MontoCV,
+                MontoAP = SelectedPension.MontoAP,
+                MontoSPS = SelectedPension.MontoSPS,
+                MontoSNP = SelectedPension.MontoSNP,
+                MontoMaxSPS = SelectedPension.MontoMaxSPS,
+                MontoCM = SelectedPension.MontoCM,
+                PensInicio = SelectedPension.PensInicio,
+                IdUser = "SerVer",
+                PensActivo = Pension.PensActivo == "0" ? "1" : "0"
+            };
+        isMensConfVisible = true;
+    }
+    private void HideMensConfModal()
+    {
+        isMensConfVisible = false;
+    }
+    private async Task OnOffPensionAsync()
+    {
+        var PensionData = await PensionService.OnOffPensionAsync(SelectedPension);
+        var firstPensionData = PensionData.FirstOrDefault();
+        if (firstPensionData != null && firstPensionData.bEstado == "1")
+        {
+            // Recargar el DataTable de acciones
+            await LoadPensiones();
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar el registro");
+        }
+        // Refrescar la UI
+        StateHasChanged();
+        HideMensConfModal();
+    }
+
+    private async Task DeleteCargo(PensionDBModel model)
+    {
+        var request = new requestPensionModel
+            {
+                IdPension = model.IdPension,
+                PensNombre = model.PensNombre,
+                MontoCV = model.MontoCV,
+                MontoAP = model.MontoAP,
+                MontoSPS = model.MontoSPS,
+                MontoSNP = model.MontoSNP,
+                MontoMaxSPS = model.MontoMaxSPS,
+                MontoCM = model.MontoCM,
+                PensInicio = model.PensInicio,
+                IdUser = "SerVer",
+                PensActivo = model.PensActivo
+            };
+
+        var PensionData = await PensionService.Create_Update_Delete_PensionDataAsync(request, 3);
+        var firstPensionData = PensionData.FirstOrDefault();
+        if (firstPensionData != null && firstPensionData.bEstado == "1")
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Registro eliminado correctamente");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Error al eliminar el registro");
+        }
+        await LoadPensiones();
+    }
+}

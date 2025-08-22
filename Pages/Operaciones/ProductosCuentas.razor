@@ -1,0 +1,673 @@
+﻿@page "/ProductosCuentas"
+@inject HttpClient Http
+
+@using System.Linq
+
+
+@using Models.Sistema
+@using Clases.Sistema
+@using Controllers.Sistema
+
+@using System.Security.Claims
+@using LeonXIIICore
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserClaimsService ClaimsService
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light portlet-fit ">
+
+            <div class="header-grupo-plantilla">
+                <div class="caption mb-0">
+                    <i class="icon-settings"></i>
+                    <span class="titulo-seccion-plantilla">CONFIGURACIÓN DE PRODUCTOS</span>
+                </div>
+
+                <div class="actions">
+
+                </div>
+            </div>
+
+
+            <div class="blazor-content portlet-body">
+                <div class="row mt-3 mb-3">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control search-input" placeholder="Buscar Descripción..." @oninput="AlBuscar" />
+                    </div>
+                    <div class="col-md-6 text-right button-LEON">
+                        <button class="btn green" @onclick="AbrirModalNuevoProducto">
+                            Nuevo Producto <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="portlet-body">
+                    @if (productos == null)
+                    {
+                        <p>Cargando productos...</p>
+                    }
+                    else
+                    {
+                        <table class="table table-striped table-hover table-bordered tabla-centro" id="tabla_productos">
+                            <thead>
+                                <tr>
+                                    <th class="hidden-column">ID PRODUCTO</th>
+                                    <th class="hidden-column">ID PRODUCTO DETALLE</th>
+                                    <th>DESCRIPCIÓN</th>
+                                    <th>TIPO MONEDA</th>
+                                    <th>TASA VIGENTE</th>
+                                    <th>PLAZO</th>
+                                    <th>MONTO MÍNIMO</th>
+                                    <th>FECHA INICIO VIGENCIA</th>
+                                    <th>ACTIVO</th>
+                                    <th>ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var producto in productosPaginados)
+                                {
+                                    <tr>
+                                        <td class="hidden-column">@producto.IdProducto</td>
+                                        <td class="hidden-column">@producto.IdProducto_Detalle</td>
+                                        <td>@producto.Descripcion</td>
+                                        <td>
+                                            @if (producto.TipMoneda == "0")
+                                            {
+                                                @:Soles
+                                            }
+                                            else if (producto.TipMoneda == "1")
+                                            {
+                                                @:Dólares
+                                            }
+                                            else
+                                            {
+                                                @:Desconocido
+                                            }
+                                        </td>
+                                        <td>@producto.TasaVigente</td>
+                                        <td>@producto.Plazo</td>
+                                        <td>@producto.MontoMin</td>
+                                        <td>@producto.FechaInicioVigencia</td>
+                                        <td>@(producto.Activo == "1" ? "Sí" : "No")</td>
+                                        <td class="center">
+                                            <button class="btn btn-icon-only blue" @onclick="() => AbrirModalEditarProducto(producto.IdProducto, producto.IdProducto_Detalle)">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+
+                                            <button class="btn btn-icon-only red" @onclick="() => EliminarProducto(producto.IdProducto, producto.IdProducto_Detalle)">
+                                                <i class="glyphicon glyphicon-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+
+                        <!-- Paginación -->
+                        <div class="pagination">
+                            <button @onclick="() => CargarPagina(1)" disabled="@(paginaActual == 1)">Primero</button>
+                            <button @onclick="() => CargarPagina(paginaActual - 1)" disabled="@(paginaActual == 1)">Anterior</button>
+                            <span>Página @paginaActual de @totalPaginas</span>
+                            <button @onclick="() => CargarPagina(paginaActual + 1)" disabled="@(paginaActual == totalPaginas)">Siguiente</button>
+                            <button @onclick="() => CargarPagina(totalPaginas)" disabled="@(paginaActual == totalPaginas)">Último</button>
+                        </div>
+
+
+
+
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal para agregar un nuevo producto -->
+@if (mostrarModal && !esEdicion)
+{
+    <div class="modal show" tabindex="-1" role="dialog" style="display: block; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Producto</h5>
+                    <button type="button" class="close" @onclick="CerrarModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <label>Producto</label>
+                    <select class="form-control" @onchange="SeleccionarProducto">
+                        @foreach (var producto in productos)
+                        {
+                            <option value="@producto.IdProducto">@producto.Producto</option>
+                        }
+                    </select>
+
+                    <label>Descripción</label>
+                    <input type="text" class="form-control" @bind="productoActualEditar.Descripcion" />
+
+                    <label>Tipo Moneda</label>
+                    <select class="form-control" @bind="productoActualEditar.TipMoneda">
+                        <option value="0">Soles</option>
+                        <option value="1">Dólares</option>
+                    </select>
+
+                    <label>Tasa Vigente</label>
+                    <input type="number" class="form-control" @bind="productoActualEditar.TasaVigente" />
+
+                    <label>Plazo</label>
+                    <input type="number" class="form-control" @bind="productoActualEditar.Plazo" />
+
+                    <label>Monto Mínimo</label>
+                    <input type="number" class="form-control" @bind="productoActualEditar.MontoMin" />
+
+                    <label>Activo</label>
+                    <select class="form-control" @bind="productoActualEditar.Activo">
+                        <option value="0">No</option>
+                        <option value="1">Sí</option>
+                    </select>
+
+                    <label>Fecha Inicio Vigencia</label>
+                    <input type="date" class="form-control" @bind="fechaInicioVigencia" />
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button class="btn btn-success" @onclick="GuardarProducto">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal para editar un producto -->
+@if (mostrarModal && esEdicion)
+{
+    <div class="modal show" tabindex="-1" role="dialog" style="display: block; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Producto</h5>
+                    <button type="button" class="close" @onclick="CerrarModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <label>Producto</label>
+                    <select class="form-control" disabled>
+                        @if (productoActual != null)
+                        {
+                            <option value="@productoActual.IdProducto">@productos.FirstOrDefault(p => p.IdProducto == productoActual.IdProducto)?.Producto</option>
+                        }
+                    </select>
+
+                    <label>Descripción</label>
+                    <input type="text" class="form-control" @bind="productoActualEditar.Descripcion" disabled />
+
+                    <label>Tipo Moneda</label>
+                    <select class="form-control" @bind="productoActualEditar.TipMoneda" disabled>
+                        <option value="0">Soles</option>
+                        <option value="1">Dólares</option>
+                    </select>
+
+                    <label>Tasa Vigente</label>
+                    <input type="number" class="form-control" @bind="productoActualEditar.TasaVigente" />
+
+                    <label>Plazo</label>
+                    <input type="number" class="form-control" @bind="productoActualEditar.Plazo" />
+
+                    <label>Monto Mínimo</label>
+                    <input type="number" class="form-control" @bind="productoActualEditar.MontoMin" />
+
+                    <label>Activo</label>
+                    <select class="form-control" @bind="productoActualEditar.Activo">
+                        <option value="0">No</option>
+                        <option value="1">Sí</option>
+                    </select>
+
+                    <label>Fecha Inicio Vigencia</label>
+                    <input type="date" class="form-control" @bind="fechaInicioEditar" />
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button class="btn btn-success" @onclick="GuardarProducto">Actualizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarModalAlerta)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5); z-index: 1050;">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 302px; max-height: 151px;">
+            <div class="modal-content rounded-4">
+                <div class="modal-header @(esErrorAlerta ? "bg-danger" : "bg-green") text-white">
+                    <h5 class="modal-title">@tituloAlerta</h5>
+
+                    <button type="button" class="btn-close" @onclick="() => mostrarModalAlerta = false" style="border: none; background: none;"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-center align-items-center" style="height: 100%;">
+                    <p class="text-center">@mensajeAlerta</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => mostrarModalAlerta = false">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+
+    /* Ocultar */
+    .hidden-column {
+        display: none;
+    }
+    
+    /* Modal */
+
+    .bg-green {
+        background-color: #B2FBA5;
+    }
+
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-body {
+        flex-grow: 1;
+    }
+
+
+</style>
+
+
+@code {
+
+    APILEON api = new();
+
+    private List<ProductosDBModel> productos=new();
+    private List<CuentasDBModel> listaProductos = new();
+    private CuentasDBModel productoActual = new();
+
+    private string mensaje = "";
+
+    private List<requestCuentasModel> listaProductosEditar = new();
+    private requestCuentasModel productoActualEditar = new();
+
+    private DateTime fechaInicioVigencia;
+    private bool mostrarModal = false;
+    private string productoSeleccionadoId; 
+
+    private bool esEdicion = false;
+    private DateTime fechaInicioEditar;
+
+    private bool mostrarModalAlerta = false;
+    private string tituloAlerta = "";
+    private string mensajeAlerta = "";
+    private bool esErrorAlerta = false;  
+
+
+    private List<CuentasDBModel> productosFiltrados = new(); // Resultado de búsqueda
+    private List<CuentasDBModel> productosPaginados = new(); // Página actual a mostrar
+
+    private int paginaActual = 1;
+    private int productosPorPagina = 10;
+    private int totalPaginas;
+
+    private string busqueda = string.Empty;
+
+    private string IdUser = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ClaimsService.InitializeAsync();
+
+        IdUser = ClaimsService.GetDatoTrabajadorByIdUser("SIdUser");
+        
+        await  CargarTodo();
+        FiltrarYPaginar();
+    }
+
+    private void FiltrarYPaginar()
+    {
+        // Filtra productos
+        productosFiltrados = string.IsNullOrWhiteSpace(busqueda)
+            ? listaProductos
+            : listaProductos.Where(p =>
+                !string.IsNullOrWhiteSpace(p.Descripcion) &&
+                p.Descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+              .ToList();
+
+        // Recalcula páginas
+        totalPaginas = (int)Math.Ceiling((double)productosFiltrados.Count / productosPorPagina);
+
+        // Corrige página actual si está fuera de rango
+        if (paginaActual > totalPaginas)
+            paginaActual = totalPaginas;
+
+        if (paginaActual < 1)
+            paginaActual = 1;
+
+        // Paginado
+        productosPaginados = productosFiltrados
+            .Skip((paginaActual - 1) * productosPorPagina)
+            .Take(productosPorPagina)
+            .ToList();
+    }
+
+    private void AlBuscar(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString() ?? string.Empty;
+        paginaActual = 1; // Reinicia a primera página al buscar
+        FiltrarYPaginar();
+    }
+
+    private void CargarPagina(int pagina)
+    {
+        paginaActual = pagina;
+        FiltrarYPaginar(); 
+    }
+
+
+    private async Task CargarTodo()
+    {
+        await CargarProductos();
+
+        try
+        {
+            var resultado = await api.APILEONGET<Respuesta<List<CuentasDBModel>>>("/api/Operaciones/Cuentas");
+
+            if (resultado != null && resultado.Exito == 1)
+            {
+                listaProductos = resultado.Data;
+                mensaje = resultado.Mensaje;
+            }
+            else
+            {
+                mensaje = "No se pudieron obtener los productos ❌";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = "Error de conexión ❌";
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+
+    private async Task CargarProductos()
+    {
+        try
+        {
+            var response = await api.APILEONGET<Respuesta<List<ProductosDBModel>>>("/api/Operaciones/Cuentas/ObtenerProductos");
+
+            if (response != null && response.Exito == 1)
+            {
+                productos = response.Data;
+            }
+            else
+            {
+                mensaje = "No se pudieron obtener los productos ❌";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = "Error de conexión ❌";
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+
+
+    private void MostrarAlerta(string titulo, string mensaje)
+    {
+        tituloAlerta = titulo;
+        mensajeAlerta = mensaje;
+        mostrarModalAlerta = true;
+        StateHasChanged();
+    }
+
+    // Abrir modal de nuevo producto
+    private void AbrirModalNuevoProducto()
+    {
+        productoActualEditar = new requestCuentasModel
+            {
+                IdProducto = "0001", 
+                IdProducto_Detalle = "0001", 
+                Descripcion = "", 
+                IdUser = IdUser,
+                TipMoneda = "0", 
+                TasaVigente = 0, 
+                Plazo = 0, 
+                MontoMin = 0, 
+                FechaInicioVigencia = DateTime.Today.ToString("dd/MM/yyyy"),
+                Activo="1"
+            };
+
+        fechaInicioVigencia = DateTime.Parse(productoActualEditar.FechaInicioVigencia);
+
+        esEdicion = false;  
+        mostrarModal = true; 
+    }
+
+
+
+    // Abrir modal de edición de producto
+    private void AbrirModalEditarProducto(string idProducto, string idProductoDetalle)
+    {
+        var producto = listaProductos.FirstOrDefault(p =>
+            p.IdProducto == idProducto &&
+            p.IdProducto_Detalle == idProductoDetalle);
+
+        if (producto != null)
+        {
+            productoActual = producto;
+
+            //fechaInicioVigencia = DateTime.Parse(producto.FechaInicioVigencia);
+
+            productoActualEditar = new requestCuentasModel
+            {
+                IdProducto = producto.IdProducto,
+                IdProducto_Detalle = producto.IdProducto_Detalle,
+                Descripcion = producto.Descripcion,
+                    IdUser = IdUser,
+                TipMoneda = producto.TipMoneda,
+                TasaVigente = producto.TasaVigente,
+                Plazo = producto.Plazo,
+                MontoMin = producto.MontoMin,
+                FechaInicioVigencia = producto.FechaInicioVigencia,
+                Activo=producto.Activo
+            };
+
+
+            fechaInicioEditar = DateTime.Parse(producto.FechaInicioVigencia);
+
+            esEdicion = true;
+            mostrarModal = true;
+        }
+    }
+
+
+    // Cerrar modal
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+        esEdicion = false;
+    }
+
+
+    private void SeleccionarProducto(ChangeEventArgs e)
+    {
+        string id = e.Value?.ToString();
+
+        if (!string.IsNullOrEmpty(id))
+        {
+            productoSeleccionadoId = id;
+
+            if (esEdicion)
+            {
+                // Si es edición, llenamos todos los datos
+                var producto = listaProductos.FirstOrDefault(p => p.IdProducto == id);
+
+                if (producto != null)
+                {
+                    productoActual = producto;
+                    fechaInicioVigencia = DateTime.Parse(producto.FechaInicioVigencia);
+
+                    productoActualEditar = new requestCuentasModel
+                    {
+                        IdProducto = producto.IdProducto,
+                        IdProducto_Detalle = producto.IdProducto_Detalle,
+                        Descripcion = producto.Descripcion,
+                        IdUser = IdUser,
+                        TipMoneda = producto.TipMoneda,
+                        TasaVigente = producto.TasaVigente,
+                        Plazo = producto.Plazo,
+                        MontoMin = producto.MontoMin,
+                        FechaInicioVigencia = producto.FechaInicioVigencia,
+                        Activo = producto.Activo
+                    };
+                }
+            }
+            else
+            {
+                // Si es agregar nuevo, solo cambiamos el IdProducto
+                productoActualEditar.IdProducto = id;
+            }
+        }
+    }
+
+    private async Task EliminarProducto(string idProducto, string idProductoDetalle)
+    {
+        try
+        {
+
+            string url = $"/api/Operaciones/Cuentas?idProducto={idProducto}&idProductoDetalle={idProductoDetalle}&idUser={IdUser}";
+
+            var response = await api.APILEONDEL<Respuesta<string>>(url);
+
+            if (response != null && response.Exito == 1)
+            {
+                await CargarTodo();
+                FiltrarYPaginar();
+                MostrarAlerta("Éxito", "Producto eliminado correctamente ✅");
+                esErrorAlerta = false;
+            }
+            else
+            {
+                MostrarAlerta("Error", $"Error al eliminar el producto ❌: {response?.Mensaje}");
+                esErrorAlerta = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            MostrarAlerta("Error de conexión", "No se pudo conectar con el servidor ❌");
+            esErrorAlerta = true;
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task GuardarProducto()
+    {
+        if (esEdicion)
+        {
+            productoActualEditar.FechaInicioVigencia = fechaInicioEditar.ToString("dd/MM/yyyy");
+        }
+        else
+        {
+            productoActualEditar.FechaInicioVigencia = fechaInicioVigencia.ToString("dd/MM/yyyy");
+        }
+        try
+        {
+            Respuesta<string>? resultado = esEdicion
+                ? await api.APILEONPUT<Respuesta<string>>("/api/Operaciones/Cuentas", productoActualEditar)
+                : await api.APILEONPOST<Respuesta<string>>("/api/Operaciones/Cuentas", productoActualEditar);
+
+            if (resultado != null && resultado.Exito == 1)
+            {
+                MostrarAlerta("Éxito", esEdicion ? "Producto actualizado correctamente ✅" : "Producto agregado correctamente ✅");
+                esErrorAlerta = false;
+                mostrarModal = false;
+            }
+            else
+            {
+                MostrarAlerta("Error", resultado?.Mensaje ?? (esEdicion ? "Error al actualizar el producto ❌" : "Error al agregar el producto ❌"));
+                esErrorAlerta = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            MostrarAlerta("Error", "Error de conexión ❌");
+            esErrorAlerta = true;
+            Console.WriteLine(ex.Message);
+        }
+
+        await CargarTodo();
+        FiltrarYPaginar();
+        CerrarModal();
+    }
+
+
+    public class requestCuentasModel
+    {
+
+        
+        public string IdProducto { get; set; }
+            
+        public string IdProducto_Detalle { get; set; }
+
+        public string Descripcion { get; set; }
+
+        public string IdUser { get; set; }
+
+        public string TipMoneda { get; set; }
+
+        public decimal TasaVigente { get; set; }
+ 
+        public int Plazo { get; set; }
+
+        public decimal MontoMin { get; set; }
+
+        public string FechaInicioVigencia { get; set; }
+
+        public string Activo { get; set; }
+    }
+
+    public class ProductosDBModel
+    {
+
+        public string IdProducto { get; set; }
+
+        public string Producto { get; set; }
+
+    }
+    public class CuentasDBModel
+    {
+        public string IdProducto { get; set; }
+
+        public string IdProducto_Detalle { get; set; }
+
+        public string Descripcion { get; set; }
+
+        public string TipMoneda { get; set; }
+
+        public decimal TasaVigente { get; set; }
+
+        public int Plazo { get; set; }
+
+        public decimal MontoMin { get; set; }
+
+        public string FechaInicioVigencia { get; set; }
+
+        public string Activo { get; set; }
+    }
+
+
+}

@@ -1,0 +1,293 @@
+﻿@page "/perfil"
+@using Models.Sistema
+@using Clases.Sistema
+@inject MenuService MenuService
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light portlet-fit">
+            <div class="header-grupo-plantilla">
+                <div class="caption mb-0">
+                    <i class="icon-settings"></i>
+                    <span class="titulo-seccion-plantilla">CONFIGURACIÓN DE PERFILES</span>
+                </div>
+
+                <div class="actions">
+                    
+                </div>
+            </div>
+            <div class="blazor-content portlet-body">
+                <div class="portlet-body">
+                    <div class="toolbar-search">
+                        <!--!--><div class="floating-label">
+                            <input type="search" class="mat-input" id="BuscarPerfil" placeholder=" ">
+                            <label for="BuscarPerfil">Buscar</label>
+                        </div>
+                        <div class="toolbar-actions">
+                            <!--!--><button class="btnbla blazor-button-outline" title="Actualizar"><i class="fa fa-refresh"></i></button>
+@*                             <!--!--><span class="toolbar-label">Actualizar</span> *@
+                            <button type="button" class="btnbla blazor-button-outline primary">
+                                <!--!--><i class="fa fa-plus"></i> NuevoPerfil
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-scrollable">
+                        <table class="blazor-tabla-requerimientos">
+                            <thead>
+                                <tr>
+                                    <th>ID Perfil</th>
+                                    <th>Perfil Activo</th>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Agencia</th>
+                                    <th>Cargo</th>
+                                    <th>Área</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="mdc-data-table__content">
+                                @if (respuesta != null && respuesta.Any())
+                                {
+                                    foreach (var res in respuesta)
+                                    {
+                                        if (res.Data != null)
+                                        {
+                                            foreach (var item in res.Data)
+                                            {
+                                                <tr>
+                                                    <td>@item.IdPerfil</td>
+                                                    <td>@item.ActivePerfil</td>
+                                                    <td>@item.fecpro.ToShortDateString()</td>
+                                                    <td>@item.hora</td>
+                                                    <td>@item.idAgencia</td>
+                                                    <td>@item.idcargo</td>
+                                                    <td>@item.idarea</td>
+                                                    <td>@(item.Estado == "1" ? "Activo" : "Inactivo")</td>
+                                                    <td>
+                                                            <div class="acciones-btns">
+                                                        <button class="btn btn-outline btn-circle btn blue-hoki" @onclick="() => EditarPerfil(item)">
+                                                                <span class="glyphicon glyphicon-edit"> </span> <p style="padding-left: 3px;margin-bottom: 0px;">Editar</p>
+                                                        </button>
+                                                        <button class="btn btn-outline btn-circle dark btn-sm red" @onclick="() => ConfirmarEliminarPerfil(item)">
+                                                                <span class="glyphicon glyphicon-trash"> </span> <p style="padding-left: 3px;margin-bottom: 0px;">Eliminar</p>
+                                                        </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9">No hay datos disponibles.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    @if (!string.IsNullOrEmpty(mensaje))
+                    {
+                        <div class="alert alert-warning">@mensaje</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Perfil -->
+@if (mostrarModalNuevo)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar Nuevo Perfil</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModalNuevoPerfil"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Nombre del Perfil</label>
+                        <input class="form-control" @bind="PerfilNuevo.ActivePerfil" />
+                    </div>
+                    <div class="form-group">
+                        <label>Agencia</label>
+                        <input class="form-control" @bind="PerfilNuevo.idAgencia" />
+                    </div>
+                    <div class="form-group">
+                        <label>Cargo</label>
+                        <input class="form-control" @bind="PerfilNuevo.idcargo" />
+                    </div>
+                    <div class="form-group">
+                        <label>Área</label>
+                        <input class="form-control" @bind="PerfilNuevo.idarea" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalNuevoPerfil">Cancelar</button>
+                    <button class="btn btn-success" @onclick="GuardarPerfilNuevo">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal Editar Perfil -->
+@if (mostrarModalEditar)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Perfil</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModalEditarPerfil"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Nombre del Perfil</label>
+                        <input class="form-control" @bind="PerfilAEditar.ActivePerfil" />
+                    </div>
+                    <div class="form-group">
+                        <label>Agencia</label>
+                        <input class="form-control" @bind="PerfilAEditar.idAgencia" />
+                    </div>
+                    <div class="form-group">
+                        <label>Cargo</label>
+                        <input class="form-control" @bind="PerfilAEditar.idcargo" />
+                    </div>
+                    <div class="form-group">
+                        <label>Área</label>
+                        <input class="form-control" @bind="PerfilAEditar.idarea" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalEditarPerfil">Cancelar</button>
+                    <button class="btn btn-primary" @onclick="GuardarPerfilEditado">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal Confirmar Eliminación -->
+@if (mostrarConfirmacionEliminar)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 350px;">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" @onclick="() => mostrarConfirmacionEliminar = false"></button>
+                </div>
+                <div class="modal-body text-center">
+                    ¿Estás seguro de que deseas eliminar el perfil <strong>@PerfilAEliminar?.ActivePerfil</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => mostrarConfirmacionEliminar = false">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="EliminarPerfil">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    APILEON api = new();
+    List<Respuesta<List<PerfilDBModel>>> respuesta = new();
+    requestPerfilModel PerfilBody = new();
+    string mensaje;
+
+    // Flags para mostrar modales
+    bool mostrarModalNuevo = false;
+    bool mostrarModalEditar = false;
+    bool mostrarConfirmacionEliminar = false;
+
+    // Modelos auxiliares
+    PerfilDBModel PerfilNuevo = new();
+    PerfilDBModel PerfilAEditar = new();
+    PerfilDBModel? PerfilAEliminar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            PerfilBody = new requestPerfilModel
+            {
+                IdPerfil = 0,
+                ActivePerfil = "Perfil123",
+                fecpro = DateTime.Now.Date,
+                hora = "11:28",
+                iduser = "LupMed",
+                iduserR = "SerVer",
+                idAgencia = "01",
+                idcargo = "01",
+                idarea = "01",
+                TokenFijo = "Token123",
+                opt = 6
+            };
+
+            var resultado = await api.APILEONPOST<Respuesta<List<PerfilDBModel>>>("/api/Sistemas/Perfil", PerfilBody);
+
+            if (resultado != null && resultado.Exito == 1)
+                respuesta.Add(resultado);
+            else
+                mensaje = $"No se pudieron obtener los perfiles ❌. Status:{resultado.Mensaje}";
+        }
+        catch (Exception ex)
+        {
+            mensaje = "Error de conexión ❌";
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    // Eventos de Nuevo Perfil
+    void MostrarModalNuevoPerfil() => mostrarModalNuevo = true;
+    void CerrarModalNuevoPerfil() => mostrarModalNuevo = false;
+    void GuardarPerfilNuevo()
+    {
+        // Lógica para guardar nuevo perfil
+        mostrarModalNuevo = false;
+    }
+
+    // Eventos de Editar Perfil
+    void EditarPerfil(PerfilDBModel perfil)
+    {
+        PerfilAEditar = new PerfilDBModel
+        {
+            IdPerfil = perfil.IdPerfil,
+            ActivePerfil = perfil.ActivePerfil,
+            idAgencia = perfil.idAgencia,
+            idcargo = perfil.idcargo,
+            idarea = perfil.idarea
+        };
+        mostrarModalEditar = true;
+    }
+
+    void CerrarModalEditarPerfil() => mostrarModalEditar = false;
+    void GuardarPerfilEditado()
+    {
+        // Lógica para guardar cambios del perfil
+        mostrarModalEditar = false;
+    }
+
+    // Eventos de Eliminar Perfil
+    void ConfirmarEliminarPerfil(PerfilDBModel perfil)
+    {
+        PerfilAEliminar = perfil;
+        mostrarConfirmacionEliminar = true;
+    }
+
+    void EliminarPerfil()
+    {
+        if (PerfilAEliminar != null)
+        {
+            // Lógica de eliminación
+            Console.WriteLine($"Eliminando perfil: {PerfilAEliminar.ActivePerfil}");
+        }
+        mostrarConfirmacionEliminar = false;
+    }
+}

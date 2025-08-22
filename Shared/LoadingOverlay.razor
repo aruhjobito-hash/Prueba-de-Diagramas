@@ -1,0 +1,172 @@
+﻿@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<HeadContent>
+    <style>
+        #loading-overlay-@uniqueId {
+            position: relative !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+            #loading-overlay-@uniqueId .loading-overlay {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                z-index: 100 !important;
+                transition: opacity 0.3s ease-out !important;
+                background: rgba(255, 255, 255, 0.8) !important;
+            }
+
+                #loading-overlay-@uniqueId .loading-overlay::before {
+                    content: "" !important;
+                    position: absolute !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    /*             background: linear-gradient(-45deg, #d6ebc1, #cbe4ad, #a6cf6e, #79b238, #618e2f, #4a7123) !important;
+         */ filter: blur(1px) !important;
+                    opacity: 0.9 !important;
+                    z-index: 100 !important;
+                }
+
+            #loading-overlay-@uniqueId .loading-logo {
+                width: 250px !important;
+                height: auto !important;
+                padding-top: 600px !important;
+                animation: pulse-@uniqueId 2s infinite !important;
+            }
+
+        @@keyframes pulse-@uniqueId {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        #loading-overlay-@uniqueId .loading-overlay.hidden {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transition-delay: 0.3s !important; /* Smooth disappear */
+        }
+    </style>
+</HeadContent>
+
+<div id="loading-overlay-@uniqueId" class="@ContainerClass">
+    <div class="loading-overlay @((IsLoaded || HideImmediately) ? "hidden" : "") @OverlayClass"
+         style="@GetOverlayStyle()">
+        <img src="/img/LogoCompleto.png" alt="Loading..." class="loading-logo" @onload="OnLogoLoaded" />
+        
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    private readonly string uniqueId = Guid.NewGuid().ToString("N");
+    private bool isInRedirect = false;
+
+    [Parameter] public bool IsLoaded { get; set; }
+    [Parameter] public bool HideImmediately { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string ContainerClass { get; set; } = "";
+    [Parameter] public string OverlayClass { get; set; } = "";
+
+    private bool logoLoaded = false;
+    private bool forceVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.LocationChanged += HandleLocationChanged;
+        await PreloadLogo();
+    }
+
+    private string GetOverlayStyle()
+    {
+        return isInRedirect ? "background: #FFF !important;" : "";
+    }
+
+    private async Task PreloadLogo()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval",
+                $"new Promise((resolve) => {{ const img = new Image(); img.src = '/img/LogoCompleto.png'; img.onload = resolve; img.onerror = resolve; }})");
+        }
+        catch
+        {
+            logoLoaded = true;
+        }
+    }
+
+    private void OnLogoLoaded()
+    {
+        logoLoaded = true;
+    }
+
+    public void SetLoadingState(bool isLoading)
+    {
+        if (isLoading)
+        {
+            forceVisible = true;
+            IsLoaded = false;
+        }
+        else
+        {
+            forceVisible = false;
+        }
+        StateHasChanged();
+    }
+
+    private async void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        isInRedirect = true;
+        StateHasChanged();
+
+        IsLoaded = false;
+        StateHasChanged();
+
+        var minimumDelay = Task.Delay(2000); // Reduced delay for same-page redirects
+        var timeoutDelay = Task.Delay(3000);
+        await Task.WhenAny(minimumDelay, timeoutDelay);
+
+        if (!forceVisible)
+        {
+            IsLoaded = true;
+            isInRedirect = false;
+            StateHasChanged();
+        }
+    }
+
+    public void Show()
+    {
+        SetLoadingState(true);
+    }
+
+    public void Hide()
+    {
+        SetLoadingState(false);
+        IsLoaded = true;
+        isInRedirect = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+        GC.SuppressFinalize(this);
+    }
+}

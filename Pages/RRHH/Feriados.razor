@@ -1,0 +1,480 @@
+﻿@using Models.Sistema
+@using Clases.Sistema
+@using Controllers.Sistema
+@page "/Feriados"
+
+<div class="row">
+    <div class="col-md-12">
+        <!-- BEGIN EXAMPLE TABLE PORTLET-->
+        <div class="portlet light portlet-fit ">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-settings font-red"></i>
+                    <span class="caption-subject font-red sbold uppercase">CONFIGURACION DE FERIADOS</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="table-toolbar">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="btn-group">
+                                <button id="sample_editable_1_new" class="btn green">
+                                    Agregar
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                @if (ListFeriados == null)
+                {
+                    <p>Cargando Feriados...</p>
+                }
+                else
+                {
+                    <table class="table table-striped table-hover table-bordered" id="sample_editable_1">
+                        <thead>
+                            <tr>
+                                <th> CODIGO FERIADO </th>
+                                <th> NOMBRE FERIADO </th>
+                                <th> FECHA</th>
+                                <th> TIPO DE FERIADO</th>
+                                <th> RECURRENTE</th>
+                                <th> REGION</th>
+                                <th> AÑO</th>
+                                <th> ESTADO</th>
+                                <th> ACCIONES</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var feriado in ListFeriados)
+
+                            {
+
+                                <tr>
+                                    <td>@feriado.CodFeriado</td>
+                                    <td>@feriado.cNombre</td>
+                                    <td>@feriado.tFecha.ToString("dd/MM/yyyy")</td>
+                                    <td>@feriado.cTipo</td>
+                                    <td>@feriado.bEsRecurrente</td>
+                                    <td>@feriado.cRegion</td>
+                                    <td>@feriado.iaño</td>
+                                    <td class="center">
+                                        @if (@feriado.bActivo == "ACTIVO")
+                                        {
+                                            <span class="label label-sm label-success"> @feriado.bActivo </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="label label-sm label-danger"> @feriado.bActivo </span>
+                                        }
+                                    </td>
+                                    <td class="center">
+                                        <button @onclick="() => AbrirModalEditar(feriado)" class="btn btn-outline btn-circle btn-sm blue">
+                                            <i class="fa fa-edit"></i> Editar
+                                        </button>
+                                        @if (@feriado.bActivo == "ACTIVO")
+                                        {
+                                            <button @onclick="() => AbrirModalDesactivar(feriado)" class="btn btn-outline btn-circle dark btn-sm red">
+                                                <i class="fa fa-trash-o"></i> Desactivar
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button @onclick="() => AbrirModalActivar(feriado)" class="btn btn-outline btn-circle dark btn-sm green-jungle">
+                                                <i class="fa fa-trash-o"></i> Activar
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*MODAL PARA PODER MOSTRAR MENSAJE DE DESACTIVACIÓN*@
+@if (mostrarModalDesactivar)
+{
+    <div class="modal fade in" id="basic" tabindex="-1" role="basic" aria-hidden="true" style="display: block; padding-right: 15px;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button @onclick="CerrarModalDesactivar" type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmación</h4>
+                </div>
+                <div class="modal-body"> ¿Estás seguro de que deseas desactivar el Feriado <b>@codigoFeriadoADesactivar</b> - <b> @cNombreFeriado </b>? </div>
+                <div class="modal-footer">
+                    <button @onclick="ConfirmarDesactivar" type="button" class="btn btn-outline btn-circle btn-sm blue" data-dismiss="modal">Sí, Desactivar</button>
+                    <button @onclick="CerrarModalDesactivar" type="button" class="btn btn-outline btn-circle dark btn-sm red" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@*MODAL PARA PODER MOSTRAR MENSAJE DE ACTIVACIÓN*@
+@if (mostrarModalActivar)
+{
+    <div class="modal fade in" id="basic" tabindex="-1" role="basic" aria-hidden="true" style="display: block; padding-right: 15px;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button @onclick="CerrarModalActivar" type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmación</h4>
+                </div>
+                <div class="modal-body"> ¿Estás seguro de que deseas Activar el feriado <b>@codigoFeriadoAActivar</b> - <b> @cNombreFeriado </b>? </div>
+                <div class="modal-footer">
+                    <button @onclick="ConfirmarActivar" type="button" class="btn btn-outline btn-circle btn-sm blue" data-dismiss="modal">Sí, Activar</button>
+                    <button @onclick="CerrarModalActivar" type="button" class="btn btn-outline btn-circle dark btn-sm red" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@*MODAL PARA PODER EDITAR LOS HORARIOS*@
+@if (mostrarModalEditar)
+{
+    <div class="modal fade in" id="basic" tabindex="-1" role="basic" aria-hidden="true" style="display: block; padding-right: 15px;">
+        <div class="modal-dialog" style=" position: fixed; top: 50%;    left: 50%; transform: translate(-50%, -50%);    width: 50%; max-width: 500px; background: white; padding: 20px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button @onclick="CerrarModalEditar" type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Editar Feriado - @FeriadoTemporal.CodFeriado</h4>
+                </div>
+                <div class="modal-body">
+
+                    <label>Código de Horario:</label>
+                    <input @bind="FeriadoTemporal.CodFeriado" class="form-control" readonly />
+
+                    <label>Nombre:</label>
+                    <input @bind="FeriadoTemporal.cNombre" class="form-control" />
+
+                    <label>Fecha:</label>
+                    <input type="date" @bind="FeriadoTemporal.tFecha" class="form-control" />
+
+                    <label>Tipo de Feriado:</label>
+                    <select @bind="FeriadoTemporal.cTipo" class="form-control">
+                        <option value="Feriado Nacional">FERIADO NACIONAL</option>
+                        <option value="Feriado Religioso">FERIADO RELIGIOSO</option>
+                        <option value="Feriado Otros">FERIADO OTROS</option>
+                    </select>
+                    
+                    <label>Recurrente:</label>
+                    <select @bind="FeriadoTemporal.bEsRecurrente" class="form-control">
+                        <option value="ES RECURRENTE">ES RECURRENTE</option>
+                        <option value="NO ES RECURRENTE">NO ES RECURRENTE</option>
+                    </select>
+
+                    <label>Año:</label>
+                    <input @bind="FeriadoTemporal.iaño" class="form-control" />
+
+                    <label>Región:</label>
+                    <input @bind="FeriadoTemporal.cRegion" class="form-control" />
+
+                    <label>Activo:</label>
+                    <select @bind="FeriadoTemporal.bActivo" class="form-control">
+                        <option value="ACTIVO">ACTIVO</option>
+                        <option value="INACTIVO">INACTIVO</option>
+                    </select>
+
+                </div>
+                <div class="modal-footer">
+                    <button @onclick="ConfirmarEditar" type="button" class="btn btn-outline btn-circle btn-sm blue" data-dismiss="modal">Actualizar</button>
+                    <button @onclick="CerrarModalEditar" type="button" class="btn btn-outline btn-circle dark btn-sm red" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+
+@inject IJSRuntime JS
+@inject HttpClient Http
+@using System.Text.Json
+@using System.Text
+@code {
+
+    //BOOL DE MODALES
+    private bool mostrarModalDesactivar = false;
+    private bool mostrarModalActivar = false;
+    private bool mostrarModalEditar = false;
+    private bool mostrarModalAgregar = false;
+
+    private List<Feriado> ListFeriados;
+    private string mensaje = "";
+    private string profileToken = "prueba123"; // Reemplaza esto con el valor real
+
+    //PARA AGREGAR NUEVOS HORARIOS
+    private Feriado NuevoFeriado = new Feriado();
+
+
+    //SECCION DE CODIGOS DE HORARIO
+    private string codigoFeriadoADesactivar = "";
+    private string codigoFeriadoAActivar = "";
+    private string codigoFeriadoAEditar = "";
+    private string cNombreFeriado = "";
+
+    //VAMOS A CREAR UN OBJETO PARA PODER USARLO EN EDICIÓN
+    private Feriado FeriadoTemporal;
+
+    //NECESARIOS PARA VALIDACION
+    private bool BotonDeshabilitado { get; set; } = true;
+    private string MensajeError { get; set; } = "";
+
+    //===============================================
+    //COMENZAR LOS PROCEDIMIENTOS Y FUNCIONES A USAR 
+    //===============================================
+
+    //===============================================
+    //PARA LLAMAR AL MODAL DE REGISTRAR UN NUEVO
+    private void AbrirModalAgregar()
+    {
+        NuevoFeriado = new Feriado();
+        mostrarModalAgregar = true;
+    }
+
+    private void CerrarModalAgregar()
+    {
+        mostrarModalAgregar = false;
+    }
+    //===============================================
+
+
+    //===============================================
+    //PARA LLAMAR AL MODAL EDITAR
+    private void AbrirModalEditar(Feriado Feriado)
+    {
+        codigoFeriadoAEditar = Feriado.CodFeriado;
+        FeriadoTemporal = new Feriado
+            {
+                CodFeriado = Feriado.CodFeriado,
+                cNombre = Feriado.cNombre,
+                tFecha= Feriado.tFecha,
+                cTipo = Feriado.cTipo,
+                bEsRecurrente = Feriado.bEsRecurrente,
+                cRegion = Feriado.cRegion,
+                iaño = Feriado.iaño,
+                bActivo = Feriado.bActivo    
+            };
+        mostrarModalEditar = true;
+    }
+
+    private void CerrarModalEditar()
+    {
+        mostrarModalEditar = false;
+    }
+    //===============================================
+
+    //===============================================
+    //PARA LLAMAR AL MODAL PARA DESACTIVAR
+    private void AbrirModalDesactivar(Feriado Feriado)
+    {
+        codigoFeriadoADesactivar = Feriado.CodFeriado;
+        cNombreFeriado = Feriado.cNombre;
+        mostrarModalDesactivar = true;
+    }
+
+    private void CerrarModalDesactivar()
+    {
+        mostrarModalDesactivar = false;
+    }
+    //===============================================
+
+
+    //===============================================
+    //PARA LLAMAR AL MODAL DE ACTIVAR
+    private void AbrirModalActivar(Feriado Feriado)
+    {
+        codigoFeriadoAActivar = Feriado.CodFeriado;
+        cNombreFeriado = Feriado.cNombre;
+        FeriadoTemporal = Feriado;
+        mostrarModalActivar = true;
+        StateHasChanged();
+    }
+    private void CerrarModalActivar()
+    {
+        mostrarModalActivar = false;
+        StateHasChanged();
+    }
+    //===============================================
+
+
+    //FUNCION PARA PODER AGREGAR UN NUEVO REGISTRO A LA TABLA DE HORARIOS
+    // Confirmar y guardar nuevo horario
+    private async Task ConfirmarAgregar()
+    {
+        try
+        {
+            var apiLeon = new APILEON();
+            NuevoFeriado.bActivo = NuevoFeriado.bActivo == "ACTIVO" ? "1" : "0";
+
+            var response = await apiLeon.APILEONPOST<Feriado>("/api/Recursos_Humanos/FeriadoController", NuevoFeriado);
+
+
+            if (response != null)
+            {
+                OnInitializedAsync();
+                StateHasChanged();
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en la solicitud: {ex.Message}");
+        }
+
+        CerrarModalAgregar();
+    }
+
+
+
+    //FUNCION PARA CONFIRMAR LA DESACTIVACION DE UN REGISTRO
+    private async Task ConfirmarDesactivar()
+    {
+        try
+        {
+            var apiLeon = new APILEON();
+            var response = await apiLeon.APILEONDEL<Feriado>("/api/Recursos_Humanos/FeriadoController?CodFeriado=" + codigoFeriadoADesactivar);
+
+            if (response != null)
+            {
+                var FeriadoAActualizar = ListFeriados.FirstOrDefault(h => h.CodFeriado == codigoFeriadoADesactivar);
+                if (FeriadoAActualizar != null)
+                {
+                    FeriadoAActualizar.bActivo = "INACTIVO";
+                    StateHasChanged();
+                    OnInitializedAsync();
+                }
+                StateHasChanged();
+            }
+            StateHasChanged();
+            OnInitializedAsync();
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en la solicitud: {ex.Message}");
+        }
+        CerrarModalDesactivar();
+    }
+
+    //FUNCION PARA CONFIRMAR LA REACTIVACION DE UN REGISTRO
+    private async Task ConfirmarActivar()
+    {
+        try
+        {
+            var apiLeon = new APILEON();
+            FeriadoTemporal.bActivo = "1";
+            FeriadoTemporal.bEsRecurrente = FeriadoTemporal.bEsRecurrente == "ES RECURRENTE" ? "1":"0" ;
+            var response = await apiLeon.APILEONPUT<Feriado>("/api/Recursos_Humanos/FeriadoController?CodFeriado=" + FeriadoTemporal.CodFeriado, FeriadoTemporal);
+
+            if (response != null)
+            {
+                var FeriadoAActualizar = ListFeriados.FirstOrDefault(h => h.CodFeriado == codigoFeriadoAActivar);
+                if (FeriadoAActualizar != null)
+                {
+                    FeriadoAActualizar.bActivo = "ACTIVO";
+                    FeriadoAActualizar.bEsRecurrente = FeriadoAActualizar.bEsRecurrente == "1" ? "ES RECURRENTE" : "NO ES RECURRENTE";
+                    StateHasChanged();
+                    OnInitializedAsync();
+                }
+                StateHasChanged();
+            }
+            StateHasChanged();
+            OnInitializedAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en la solicitud: {ex.Message}");
+        }
+        CerrarModalActivar();
+    }
+
+    private async Task ConfirmarEditar()
+    {
+        try
+        {
+            var apiLeon = new APILEON();
+            FeriadoTemporal.bActivo = FeriadoTemporal.bActivo == "ACTIVO" ? "1" : "0";
+            FeriadoTemporal.bEsRecurrente = FeriadoTemporal.bEsRecurrente == "ES RECURRENTE" ? "1" : "0";
+            var response = await apiLeon.APILEONPUT<Feriado>("/api/Recursos_Humanos/FeriadoController?CodFeriado=" + FeriadoTemporal.CodFeriado, FeriadoTemporal);
+            if (response != null)
+            {
+                var FeriadoAActualizar = ListFeriados.FirstOrDefault(h => h.CodFeriado == codigoFeriadoAEditar);
+                if (FeriadoAActualizar != null)
+                {
+                    FeriadoAActualizar.cNombre = FeriadoTemporal.cNombre;
+                    FeriadoAActualizar.cTipo = FeriadoTemporal.cTipo;
+                    FeriadoAActualizar.tFecha = FeriadoTemporal.tFecha;
+                    FeriadoAActualizar.bEsRecurrente = FeriadoTemporal.bEsRecurrente == "1" ? "ES RECURRENTE":"NO ES RECURRENTE";
+                    FeriadoAActualizar.cRegion = FeriadoTemporal.cRegion;
+                    FeriadoAActualizar.iaño = FeriadoTemporal.iaño;
+                    FeriadoAActualizar.bActivo = FeriadoTemporal.bActivo == "1" ? "ACTIVO" : "INACTIVO";
+                    StateHasChanged();
+                    OnInitializedAsync();
+                }
+                StateHasChanged();
+            }
+            StateHasChanged();
+                    OnInitializedAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en la solicitud: {ex.Message}");
+        }
+        CerrarModalEditar();
+    }
+  
+    // PARA INICIALIZAR
+    protected override async Task OnInitializedAsync()
+    {
+        var apiLeon = new APILEON();
+       
+        try
+        {
+            ListFeriados = await apiLeon.APILEONGET<List<Feriado>>("/api/Recursos_Humanos/FeriadoController");
+
+            if (ListFeriados != null && ListFeriados.Count > 0)
+            {
+                mensaje = $"Horarios obtenidos correctamente ✅ Se obtuvieron {ListFeriados.Count} registros.";
+                Console.WriteLine($"Cantidad de horarios: {ListFeriados.Count}");
+                var data = System.Text.Json.JsonSerializer.Serialize(ListFeriados);
+                StateHasChanged();
+            }
+            else
+            {
+                mensaje = "Error al obtener los horarios ❌";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = "Error de conexión ❌";
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+    //MODELO PARA RECEPCIONAR LOS DATOS 
+    public class Feriado
+    {
+        public string CodFeriado { get; set; } = "";
+        public string cNombre { get; set; } = "";
+        public DateTime tFecha { get; set; } 
+        public string cTipo { get; set; } = "";
+        public string bEsRecurrente { get; set; } = "";
+        public string cRegion { get; set; } = "";
+        public int iaño { get; set; } 
+        public string bActivo { get; set; } = "";
+
+    }
+}

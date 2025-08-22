@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<NoWarn>$(NoWarn);8618;1998;8618;0168;8603;8602;8601;8600;4014;0414;0169;8604;8625</NoWarn>
+		<!---->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\Finanzas\**" />
+    <Compile Remove="Models\Finanzas\**" />
+    <Content Remove="Controllers\Finanzas\**" />
+    <Content Remove="Models\Finanzas\**" />
+    <EmbeddedResource Remove="Controllers\Finanzas\**" />
+    <EmbeddedResource Remove="Models\Finanzas\**" />
+    <None Remove="Controllers\Finanzas\**" />
+    <None Remove="Models\Finanzas\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Pages\LoginRedirect.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="Blazored.Toast" Version="4.2.1" />
+    <PackageReference Include="EPPlus" Version="6.2.19" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.32" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.DirectoryServices" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Pages\LoginRedirect.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Pages\LoginRedirect.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\LoginRedirect.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Servicios\" />
+  </ItemGroup>
+
+</Project>

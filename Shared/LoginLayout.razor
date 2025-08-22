@@ -1,0 +1,134 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+
+<HeadContent>
+    <title>Cooperativa León XIII - Login</title>
+    <link href="Login.css" rel="stylesheet" />
+    <style>
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #4a7123;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        .loading-overlay::before{
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient( -45deg, #d6ebc1, #cbe4ad, #a6cf6e, #79b238, #618e2f, #4a7123 ) !important;
+                filter: blur(1px);
+                opacity: 0.9;
+                z-index: -1;
+        }
+        .loading-logo {
+            width: 150px;
+            height: auto;
+            animation: pulse 1.5s infinite;
+        }
+
+        @@keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.20);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .login-content {
+            transition: opacity 0.3s ease-in;
+        }
+    </style>
+</HeadContent>
+
+<body>
+    <div class="loading-overlay" style="@((IsLoaded) ? "opacity:0; pointer-events:none;" : "")">
+        <img src="/logo_leon.png" alt="Loading..." class="loading-logo" />
+    </div>
+
+    <div class="login-page">
+        <div class="login-content" style="@((IsLoaded) ? "opacity:1;" : "opacity:0; height:0; overflow:hidden;")">
+            <div class="login-header-spacer">
+                <!-- Top-left logo and big text -->
+                <div class="login-top-left" style="pointer-events: none;">
+                    <div class="login-welcome-row">
+                        <img src="/gear.png" alt="Gear Icon" class="login-gear-icon" />
+                        <div class="login-glimmer-wrapper">
+                            <div class="login-big-text">L360</div>
+                        </div>
+                    </div>
+                </div>
+                <img src="/logo_leon.png" alt="Logo" class="login-logo" />
+
+                <!-- Login form + content -->
+                <div class="login-wrapper">
+                    @Body
+                </div>
+
+                <!-- Bottom section -->
+                <div class="login-bottom-section">
+                    <div class="align-self-md-end login-rectangle" style="pointer-events: none;">
+                        <p>Es hora de escribir un nuevo capítulo en la historia de la COOPERATIVA.</p>
+                    </div>
+
+                    <div class="login-rectangle login-buttons">
+                        <div class="align-self-md-end login-button-item">
+                            <img src="/facebook.png" alt="Facebook" />
+                            <span>Facebook</span>
+                        </div>
+                        <div class="login-button-item">
+                            <img src="/motor.png" alt="Intranet" />
+                            <span>Intranet</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+@code {
+    private bool IsLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Wait for all critical images to load
+            await Task.WhenAll(
+                PreloadImage("/logo_leon.png"),
+                PreloadImage("/gear.png"),
+                PreloadImage("/facebook.png"),
+                PreloadImage("/motor.png")
+            );
+
+            // Small additional delay for smoother transition
+            await Task.Delay(300);
+
+            IsLoaded = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task PreloadImage(string imageUrl)
+    {
+        await JSRuntime.InvokeVoidAsync("eval",
+            $"new Promise((resolve) => {{ const img = new Image(); img.src = '{imageUrl}'; img.onload = resolve; }})");
+    }
+}

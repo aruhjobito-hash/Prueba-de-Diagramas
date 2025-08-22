@@ -1,0 +1,324 @@
+﻿@page "/Cargos"
+@using Clases.Sistema
+@using LeonXIIICore.Controllers.Configuracion
+@using Models.Configuracion
+@using Models.Sistema
+@inject HttpClient Http
+@inherits MainLayout
+@using System.Security.Claims
+@using LeonXIIICore
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserClaimsService ClaimsService
+@inject CargosController CargosService
+@inject IJSRuntime JSRuntime
+@* @using LeonXIIICore.Models.Sistema *@
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light portlet-fit">
+            <div class="header-grupo-plantilla">
+                <div class="header-content">
+                    <div class="caption mb-0">
+                        <i class="icon-settings"></i>
+                        <span class="titulo-seccion-plantilla">
+                            Cargos
+                        </span>
+                    </div>
+                </div>
+
+                <div class="header-content">
+                    <div class="actions">
+                        @* <button class="btn green">
+                            Nuevo
+                            <i class="fa fa-plus"></i>
+                        </button>*@
+                    </div>
+                </div>
+            </div>
+            <div class="blazor-content portlet-body">
+                <div class="portlet-body">
+                    <div class="toolbar-search">
+                        <div class="floating-label">
+                            <input type="search" class="mat-input" id="buscarArticulo" placeholder=" " />
+                            <label for="buscarArticulo">Buscar</label>
+                        </div>
+                        <div class="toolbar-actions">
+                            <button class="btnbla blazor-button-outline" title="Actualizar">
+                                <i class="fa fa-refresh"></i>
+                            </button>
+                            <span class="toolbar-label">Actualizar</span>
+                            @* <button class="icon-btn" title="Filtros">
+                                <i class="fa fa-filter"></i>
+                            </button>
+                            <span class="toolbar-label">Filtros</span> *@
+                            <button type="button" class="btnbla blazor-button-outline primary" @onclick="ShowCreateModal">
+                                <i class="fa fa-plus"></i> Nuevo Cargo
+                            </button>
+                        </div>
+                    </div>
+                        <div class="portlet-body">
+                        <table class="blazor-tabla-requerimientos" id="sample_1" role="grid" aria-describedby="sample_1_info">
+                                <thead>
+                                    <tr>
+                                        <th>Id Cargo</th>
+                                        <th>Cargo</th>
+                                        @* <th>Centro de Costo</th> *@
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ccost in Cargo)
+                                    {
+                                        <tr>
+                                            <td>@ccost.IdCargo</td>
+                                            <td>@ccost.Cargo</td>
+                                            @* <td>@ccost.Valor</td> *@
+                                            <td>
+                                                <div class="acciones-btns">
+                                                    @((MarkupString)(ccost.Activo == "0"
+                                                        ? "<span class=\"label label-danger\">Inactivo</span>"
+                                                        : "<span class=\"label label-success\">Activo</span>"))
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="acciones-btns">
+                                                    <button class="btn btn-outline btn-circle btn blue-hoki" @onclick="() => ShowEditModal(ccost)">
+                                                        <i class="fa fa-edit"></i> Edit
+                                                    </button>
+                                                    @if (@ccost.Activo == "1")
+                                                    {
+                                                        <button type="button" @onclick="() => ShowOnOffModal(ccost)" class="btn btn-outline btn-circle dark btn-sm red">
+                                                            <i class="fa fa-trash-o"></i> Desactivar
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="button" @onclick="() => ShowOnOffModal(ccost)" class="btn btn-outline btn-circle dark btn-sm green-jungle">
+                                                            <i class="fa fa-trash-o"></i> Activar
+                                                        </button>
+                                                    }
+                                                   @*  <button class="btn btn-outline btn-circle dark btn-sm black" @onclick="() => DeleteCargo(ccost)">
+                                                        <i class="fa fa-trash-o"></i> Eliminar
+                                                    </button> *@
+                                             </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (isEditModalVisible)
+{
+    <div id="DocModal" class="modal show"  role="dialog" style="background-color: rgba(0,0,0,0.5);z-index: 10051;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @onclick="HideEditModal">×</button>
+                    <h4 class="modal-title">@modalTitle</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="operacion">Codigo de Cargo</label>
+                            <input type="text" id="Codigo" class="form-control" @bind="SelectedCargo.IdCargo" disabled/>
+                        </div>
+                        <div class="form-group">
+                            <label for="operacion">Cargo</label>
+                            <input type="text" id="Codigo" class="form-control" @bind="SelectedCargo.Cargo" />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    @* <button type="button" class="btn red" @onclick="SaveChanges">Aceptar</button> *@
+                    <button type="button" class="btn btn-outline  red" @onclick="SaveChanges">Registrar</button>
+                    <button type="button" class="btn btn-outline dark" @onclick="HideEditModal">Salir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (isMensConfVisible)
+{
+    <div class="modal fade in" id="basic" tabindex="-1" role="basic" aria-hidden="true" style="display: block; padding-right: 15px;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button @onclick="HideMensConfModal" type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmación</h4>
+                </div>
+                <div class="modal-body"> ¿Estás seguro de que deseas @(SelectedCargo.Activo == "0" ? "desactivar" : "activar") el centro de costo del área ? </div>
+                <div class="modal-footer">
+                    <button @onclick="OnOffCargoAsync" 
+                        type="button" 
+                        class="btn btn-outline btn-circle dark btn-sm @(SelectedCargo.Activo == "0" ? "red" : "green-jungle")"
+                        data-dismiss="modal">
+                        Sí, @(SelectedCargo.Activo == "0" ? "Desactivar" : "Activar")</button>
+                    <button @onclick="HideMensConfModal" type="button" class="btn btn-outline btn-circle dark btn-sm red" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    private string dato;
+    private bool isEditModalVisible = false;
+    private bool isMensConfVisible = false;
+    private int currentOption = 1; // 1 para crear, 2 para editar, 3 para eliminar
+    private string modalTitle = "Editar Cargo";
+    private List<CargosDBModel> Cargo = new List<CargosDBModel>();
+    private requestCargosModel SelectedCargo = new requestCargosModel();
+    private string message = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ClaimsService.InitializeAsync();
+        // dato = ClaimsService.GetDatoTrabajadorByIdUser("SidArea");
+        dato = ClaimsService.GetDatoTrabajadorByIdUser("SIdUser"); // works case-insensitively
+        await LoadCargos();
+        StateHasChanged(); // <-- Fuerza el refresco para que el botón se deshabilite correctamente
+    }
+
+    private async Task LoadCargos()
+    {
+        try
+        {
+            Cargo = await CargosService.LoadCargosDataAsync();
+            if (Cargo == null)
+            {
+                Cargo = new List<CargosDBModel>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar las agencias: {ex.Message}");
+            Cargo = new List<CargosDBModel>();
+        }
+    }
+
+
+
+    private void HideEditModal()
+    {
+        isEditModalVisible = false;
+    }
+    private async Task ShowCreateModal()
+    {
+        SelectedCargo = new requestCargosModel
+            {
+                IdCargo = "00",
+                Cargo = string.Empty,
+                IdUser = dato,
+                Activo = "1"
+            };
+        modalTitle = "Crear Cargo";
+        isEditModalVisible = true;
+        currentOption = 1;
+    }
+    private void ShowEditModal(CargosDBModel model)
+    {
+        SelectedCargo = new requestCargosModel
+            {
+                IdCargo = model.IdCargo,
+                Cargo = model.Cargo,
+                IdUser = dato,
+                Activo = "1"
+            };
+        modalTitle = "Editar Cargo";
+        isEditModalVisible = true;
+        currentOption = 2; // Opción para editar
+    }
+    private async Task SaveChanges()
+    {
+        var request = new requestCargosModel
+            {
+                IdCargo = SelectedCargo.IdCargo,
+                Cargo = SelectedCargo.Cargo,
+                IdUser = SelectedCargo.IdUser,
+                Activo = SelectedCargo.Activo
+            };
+
+        var CargoData = await CargosService.Create_Update_Delete_CargoDataAsync(request, currentOption);
+        var firstCargoData = CargoData.FirstOrDefault();
+        if (firstCargoData != null && firstCargoData.bEstado == "1")
+        {
+            if (currentOption == 1) // Insertar
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Cargo creado exitosamente.");
+            }
+            else if (currentOption == 2) // Actualizar
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Cargo actualizado exitosamente.");
+            }
+
+        }
+        else
+        {
+            message = currentOption == 1 ? "Error al crear el registro" : currentOption == 2 ? "Error al actualizar el registro" : "Error al eliminar el registro";
+            await JSRuntime.InvokeVoidAsync("alert", message);
+        }
+        await LoadCargos();
+        HideEditModal();
+    }
+    private async Task ShowOnOffModal(CargosDBModel Cargo)
+    {
+        SelectedCargo = new requestCargosModel
+            {
+                IdCargo = Cargo.IdCargo,
+                Cargo=Cargo.Cargo,
+                IdUser = dato,
+                Activo = Cargo.Activo == "0" ? "1" : "0"
+            };
+        isMensConfVisible = true;
+    }
+    private void HideMensConfModal()
+    {
+        isMensConfVisible = false;
+    }
+    private async Task OnOffCargoAsync()
+    {
+        var CargoData = await CargosService.OnOffCargoAsync(SelectedCargo);
+        var firstCargoData = CargoData.FirstOrDefault();
+        if (firstCargoData != null && firstCargoData.bEstado == "1")
+        {
+            // Recargar el DataTable de acciones
+            await LoadCargos();
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar el registro");
+        }
+        // Refrescar la UI
+        StateHasChanged();
+        HideMensConfModal();
+    }
+
+    private async Task DeleteCargo(CargosDBModel model)
+    {
+        var request = new requestCargosModel
+            {
+                IdCargo = model.IdCargo,
+                Cargo = model.Cargo,
+                IdUser = dato,
+                Activo = model.Activo
+            };
+
+        var CargoData = await CargosService.Create_Update_Delete_CargoDataAsync(request, 3);
+        var firstCargoData = CargoData.FirstOrDefault();
+        if (firstCargoData != null && firstCargoData.bEstado == "1")
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Registro eliminado correctamente");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Error al eliminar el registro");
+        }
+        await LoadCargos();
+    }
+}

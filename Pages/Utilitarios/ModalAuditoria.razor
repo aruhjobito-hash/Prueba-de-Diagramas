@@ -1,0 +1,68 @@
+﻿@typeparam TItem
+@using System.Reflection
+
+@if (Visible)
+{
+    <div class="modal fade in" style="display:block; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" @onclick="Cerrar">&times;</button>
+                    <h4 class="modal-title">@Title</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead>
+                            <tr>
+                                @foreach (var col in Columnas)
+                                {
+                                    <th class="text-center">@col</th>
+                                }
+                                <th>Descargar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Datos)
+                            {
+                                <tr>
+                                    @foreach (var prop in Props)
+                                    {
+                                        <td class="text-center">@prop.GetValue(item)</td>
+                                    }
+
+                                    <td class="text-center">
+                                        @if (OnDescargar.HasDelegate)
+                                        {
+                                            <button class = "btn btn-outline btn-circle btn-sm blue" @onclick="() => OnDescargar.InvokeAsync(item)"> <i class="fa fa-download"></i> Descargar</button>
+                                        }
+                                    </td>
+
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" @onclick="Cerrar">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public List<TItem> Datos { get; set; } = new();
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<TItem> OnDescargar { get; set; }
+
+    private List<PropertyInfo> Props => typeof(TItem).GetProperties(BindingFlags.Public | BindingFlags.Instance).ToList();
+    private List<string> Columnas => Props.Select(p => p.Name).ToList();
+
+    private async Task Cerrar()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

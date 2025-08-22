@@ -1,0 +1,42 @@
+﻿@page "/login"
+@page "/login/{ErrorMessage}"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="login-error-message">@ErrorMessage</div>
+}
+
+<form method="post" action="/account/login">
+    <h2 class="login-h2">Bienvenido</h2>
+
+    <div class="login-input-field">
+        <input type="text" id="username" name="username" required />
+        <label>Ingresa tu correo o Usuario</label>
+    </div>
+
+    <div class="login-input-field">
+        <input type="password" id="password" name="password" required />
+        <label>Ingresa tu Contraseña</label>
+    </div>
+
+    <div class="login-forget">
+        <label>
+            <input type="checkbox" id="remember" name="remember" />
+            <p>Recuerdame</p>
+        </label>
+        <a href="#">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <button type="submit" class="login-button">Ingresar</button>
+
+    <div class="login-register">
+        <p>No tienes una cuenta? <a href="#">Registrarse</a></p>
+    </div>
+</form>
+
+@code {
+    [Parameter] public string? ErrorMessage { get; set; }
+}

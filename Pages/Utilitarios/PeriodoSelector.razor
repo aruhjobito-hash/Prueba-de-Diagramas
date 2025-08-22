@@ -1,0 +1,107 @@
+﻿@using Models.Utilitarios
+@code {
+    [Parameter] public int AnioSeleccionado { get; set; }
+    [Parameter] public EventCallback<int> AnioSeleccionadoChanged { get; set; }
+
+    [Parameter] public int MesSeleccionado { get; set; }
+    [Parameter] public EventCallback<int> MesSeleccionadoChanged { get; set; }
+
+    [Parameter] public EventCallback<PeriodoModel> OnGenerarPeriodo { get; set; }
+    [Parameter] public EventCallback<PeriodoModel> OnConsultarPeriodo { get; set; }
+
+
+    private int anioInicio = 2019;
+    private int anioActual = DateTime.Now.Year;
+
+    private async Task Generar()
+    {
+        var periodo = new PeriodoModel
+            {
+                Anio = AnioSeleccionado,
+                Mes = MesSeleccionado
+            };
+        await OnGenerarPeriodo.InvokeAsync(periodo);
+    }
+
+    private async Task Consultar()
+    {
+        var periodo = new PeriodoModel
+            {
+                Anio = AnioSeleccionado,
+                Mes = MesSeleccionado
+            };
+        await OnConsultarPeriodo.InvokeAsync(periodo);
+    }
+}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>Seleccione Periodo</strong>
+    </div>
+    <div class="panel-body">
+        <div class="row" id="event_period">
+            <div class="col-xs-12 col-sm-12 col-md-6">
+                <!-- Año -->
+                <div class="col-xs-12 col-sm-6 col-md-3">
+                    <div class="form-group">
+                        <label for="anio">Año</label>
+                        <select class="form-control" id="anio" @bind="@AnioSeleccionado" @bind:event="onchange">
+                            @for (int anio = anioActual; anio >= anioInicio; anio--)
+                            {
+                                <option value="@anio">@anio</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Mes -->
+                <div class="col-xs-12 col-sm-6 col-md-3">
+                    <div class="form-group">
+                        <label for="mes">Mes</label>
+                        <select class="form-control" id="mes" @bind="@MesSeleccionado" @bind:event="onchange">
+                            @for (int mes = 1; mes <= 12; mes++)
+                            {
+                                <option value="@mes">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(mes).ToUpper()</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Botón Generar -->
+                <div class="col-xs-12 col-sm-6 col-md-3">
+                    <div class="form-group">
+                        <label style="visibility: hidden;">Generar</label>
+                        <button type="button" @onclick="Generar"
+                                class="btn btn-info btn-block"
+                                style="background-color: #3f51b5;"
+                                title="Esta opción vuelve a generar los datos">
+                            <i class="fa fa-file-archive-o"></i> Generar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botón Consultar -->
+                <div class="col-xs-12 col-sm-6 col-md-3">
+                    <div class="form-group">
+                        <label style="visibility: hidden;">Consultar</label>
+                        <button type="button" @onclick="Consultar"
+                                class="btn btn-info btn-block"
+                                style="background-color: #3f51b5;"
+                                title="Esta opción descarga los últimos datos generados">
+                            <i class="fa fa-file-archive-o"></i> Consultar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+
+            </div>
+            
+        </div>
+    </div>
+
+
+</div>
+
+
+
+

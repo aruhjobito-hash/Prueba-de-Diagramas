@@ -1,0 +1,96 @@
+/* here you can put your own css to customize and override the theme */
+.theme-panel > .theme-options {
+    box-shadow: 5px 5px rgba(63, 77, 86, 0.1);
+    top: 4px;
+    right: 0;
+    display: none;
+    position: absolute;
+    z-index: 100;
+    background: #3f4d56;
+    border: 1px solid #39454d;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    -o-border-radius: 4px;
+    border-radius: 4px;
+}
+
+    .theme-panel > .theme-options > .theme-option {
+        color: #eee;
+        padding: 11px;
+        border-top: 1px solid #46545f;
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+
+        .theme-panel > .theme-options > .theme-option > span {
+            text-transform: uppercase;
+            display: inline-block;
+            width: 115px;
+            font-size: 13px;
+            font-weight: 300;
+        }
+
+        .theme-panel > .theme-options > .theme-option > select.form-control {
+            display: inline;
+            width: 100px;
+            padding: 2px;
+            text-transform: lowercase;
+        }
+
+        .theme-panel > .theme-options > .theme-option.theme-colors {
+            border-top: 0;
+        }
+
+            .theme-panel > .theme-options > .theme-option.theme-colors > span {
+                display: block;
+                width: auto;
+            }
+
+            .theme-panel > .theme-options > .theme-option.theme-colors > ul {
+                list-style: none;
+                padding: 0;
+                display: block;
+                margin-bottom: 10px !important;
+                margin-top: 15px;
+            }
+
+                .theme-panel > .theme-options > .theme-option.theme-colors > ul > li {
+                    width: 46px;
+                    height: 45px;
+                    margin: 0 4px;
+                    cursor: pointer;
+                    list-style: none;
+                    float: left;
+                    border: solid 1px #707070;
+                    /* theme colors */
+                }
+
+                    .theme-panel > .theme-options > .theme-option.theme-colors > ul > li:first-child {
+                        margin-left: 0;
+                    }
+
+                    .theme-panel > .theme-options > .theme-option.theme-colors > ul > li:hover,
+                    .theme-panel > .theme-options > .theme-option.theme-colors > ul > li.current {
+                        border: solid 2px #d64635;
+                    }
+
+                    .theme-panel > .theme-options > .theme-option.theme-colors > ul > li.color-default {
+                        background: #DEF7D2;
+                    }
+
+                    .theme-panel > .theme-options > .theme-option.theme-colors > ul > li.color-dark {
+                        background: #9ABD59;
+                    }
+
+                    .theme-panel > .theme-options > .theme-option.theme-colors > ul > li.color-blue {
+                        background: #FAD750;
+                    }
+
+                    .theme-panel > .theme-options > .theme-option.theme-colors > ul > li.color-grey {
+                        background: #EBF4FF;
+                    }
+
+                    .theme-panel > .theme-options > .theme-option.theme-colors > ul > li.color-light {
+                        background: #4A9E62;
+                    }

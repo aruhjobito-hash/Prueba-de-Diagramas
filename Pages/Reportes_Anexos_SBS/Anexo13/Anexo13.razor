@@ -1,0 +1,285 @@
+﻿@page "/Anexo13"
+
+@using LeonXIIICore.Pages.Utilitarios
+@using Models.Sistema
+@using Clases.Sistema
+@using Controllers.Sistema
+@using Models.Reportes_Anexos_SBS
+@using System.Security.Claims
+@using LeonXIIICore
+@using System.Text.Json
+@using System.Text
+@using OfficeOpenXml;
+@using OfficeOpenXml.Style;
+@using Models.Utilitarios;
+
+@inherits MainLayout
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserClaimsService ClaimsService
+@inject IJSRuntime JS
+@inject HttpClient Http
+@implements IDisposable
+
+<style>
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .spinner-content {
+        text-align: center;
+        color: #333;
+    }
+
+    .alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4caf50;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+        transition: opacity 0.5s ease-in-out;
+        z-index: 1001;
+    }
+</style>
+
+@if (cargando)
+{
+    <div class="loading-overlay">
+        <div class="spinner-content">
+            <img src="../assets/global/img/loading-spinner-blue.gif" alt="loading" />
+            <p>Cargando datos del Anexo 13...</p>
+        </div>
+    </div>
+}
+else if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert" @ref="alertDiv">@mensaje</div>
+}
+
+@if (LAnexo13Model != null && LAnexo13Model.Count > 0)
+{
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet light portlet-fit">
+                <div class="header-grupo-plantilla">
+                    <div class="header-content">
+                        <div class="caption mb-0">
+                            <i class="icon-settings"></i>
+                            <span class="titulo-seccion-plantilla">
+                                Anexo 13
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="header-content">
+                        <div class="actions">
+
+                        </div>
+                    </div>
+                </div>
+
+                            
+
+                <div class="blazor-content portlet-body">
+                    <div class="portlet-body">
+                        <div id="view-content" class="container-fluid">
+
+                            <PeriodoSelector AnioSeleccionado="@AnioSeleccionado"
+                                         AnioSeleccionadoChanged="@(val => AnioSeleccionado = val)"
+                                         MesSeleccionado="@MesSeleccionado"
+                                         MesSeleccionadoChanged="@(val => MesSeleccionado = val)"
+                                         OnGenerarPeriodo="GenerarConPeriodo" />
+
+
+                            <TablaGenerica TItem="AnexoAuditoria"
+                                       Datos="LAnexo13Model"
+                                       OnDescargar="Descargar"
+                                       OnAuditoria="Auditar" />
+                            
+                        </div>
+
+                        <ModalAuditoria TItem="AuditoriaModel"
+                                    Title="Auditoría de Descargas"
+                                    Datos="DatosAuditoria"
+                                    Visible="ModalVisible"
+                                    OnClose="CerrarModal"
+                                    OnDescargar="DescargarAudit" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+
+@code {
+    private int AnioSeleccionado { get; set; } = DateTime.Now.Year;
+    private int MesSeleccionado { get; set; } = DateTime.Now.Month;
+
+    // PARA LA AUDITORIA
+    private bool ModalVisible = false;
+    private List<AuditoriaModel> DatosAuditoria = new();
+    private void MostrarModalAuditoria() => ModalVisible = true;
+    private void CerrarModal()
+    {
+        ModalVisible = false;
+    }
+    // PARA AUDITORIA 
+
+    private List<AnexoAuditoria> LAnexo13Model;
+    private string mensaje = "";
+    private string profileToken = "prueba123";
+    private bool cargando = true;
+    private bool _isDisposed = false;
+    private ElementReference alertDiv;
+
+    // MODAL EDITAR 
+    private string CodigoAnexo13Editar;
+    private AnexoAuditoria Anexo13Temporal;
+    private bool mostrarModalEditar = false;
+
+
+    //PARA GENERAR
+    private async Task GenerarConPeriodo(PeriodoModel periodo)
+    {
+        cargando = true;
+        AnioSeleccionado = periodo.Anio;
+        MesSeleccionado = periodo.Mes;
+
+        string urlExcel = $"/api/export/GenerarExcelAnexo13?anio={AnioSeleccionado}&mes={MesSeleccionado}&IdUser={dato}";
+        await JS.InvokeVoidAsync("descargarArchivo", urlExcel);
+        await Task.Delay(10000);
+        string url = $"/api/export/ExportTxtAnexo13?anio={AnioSeleccionado}&mes={MesSeleccionado}";
+        await JS.InvokeVoidAsync("descargarArchivo", url);
+        await OnInitializedAsync();
+
+        cargando = false;
+        if (!_isDisposed)
+            StateHasChanged();
+
+    }
+    //PARA GENERAR
+
+    private void AbrirModalEditar(AnexoAuditoria anexo13Model)
+    {
+        CodigoAnexo13Editar = anexo13Model.Anio;
+        Anexo13Temporal = new AnexoAuditoria
+            {
+                Codigo = anexo13Model.Codigo,
+                Nombre = anexo13Model.Nombre,
+                Mes = anexo13Model.Mes,
+                Anio = anexo13Model.Anio,
+                Estado = anexo13Model.Estado
+            };
+        mostrarModalEditar = true;
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!string.IsNullOrEmpty(mensaje))
+        {
+            await Task.Delay(4000);
+            mensaje = "";
+            StateHasChanged();
+        }
+    }
+
+    private string dato;
+    protected override async Task OnInitializedAsync()
+    {
+        var apiLeon = new APILEON();
+
+        try
+        {
+            await ClaimsService.InitializeAsync();
+            dato = ClaimsService.GetDatoTrabajadorByIdUser("SIdUser"); // works case-insensitively
+
+            var Prueba = await apiLeon.APILEONGET <Respuesta<List<AnexoAuditoria>>>("/api/Reportes_Anexos_SBS/Auditoria?Operacion=1&NombreTabla=Anexo13");
+            LAnexo13Model = Prueba.Data;
+            if (LAnexo13Model != null && LAnexo13Model.Count > 0)
+            {
+                mensaje = $"Anexo 13 obtenidos correctamente ✅ Se obtuvieron {LAnexo13Model.Count} registros.";
+            }
+            else
+            {
+                mensaje = "Error al obtener los horarios ❌";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = "Error de conexión ❌";
+            Console.WriteLine(ex.Message);
+        }
+
+        cargando = false;
+        if (!_isDisposed)
+            StateHasChanged();
+    }
+
+    private async Task DescargarAudit(AuditoriaModel item)
+    {
+
+        string urlExcel = $"/api/export/ExportExcelAnexo13?codigo={item.CODIGO}&anio={item.ANIO}&mes={item.MES}&IdUser=BetLla";
+        await JS.InvokeVoidAsync("descargarArchivo", urlExcel);
+
+
+        string url = $"/api/export/ExportTxtAnexo13?codigo={item.CODIGO}&anio={item.ANIO}&mes={item.MES}";
+        await JS.InvokeVoidAsync("descargarArchivo", url);
+
+        await OnInitializedAsync();
+        Console.WriteLine($"Descargando {item.CODIGO}");
+
+    }
+
+    private async Task Descargar(AnexoAuditoria item)
+    {
+
+        string urlExcel = $"/api/export/ExportExcelAnexo13?codigo={item.Codigo}&anio={item.Anio}&mes={item.Mes}&IdUser=BetLla";
+        await JS.InvokeVoidAsync("descargarArchivo", urlExcel);
+
+        string url = $"/api/export/ExportTxtAnexo13?codigo={item.Codigo}&anio={item.Anio}&mes={item.Mes}";
+        await JS.InvokeVoidAsync("descargarArchivo", url);
+
+        await OnInitializedAsync();
+        Console.WriteLine($"Descargando {item.Nombre}");
+    }
+
+
+    private async Task Auditar(AnexoAuditoria item)
+    {
+        var apiLeon = new APILEON();
+        var datos = await apiLeon.APILEONGET<Respuesta<List<AuditoriaModel>>>("/api/Reportes_Anexos_SBS/Auditoria/AuditoriaxCod?Operacion=2&NombreTabla=Anexo13&Codigo=" + item.Codigo);
+        DatosAuditoria = datos.Data; 
+        if (DatosAuditoria != null && DatosAuditoria.Count > 0)
+        {
+            mensaje = $"Anexo 13 obtenidos correctamente ✅ Se obtuvieron {DatosAuditoria.Count} registros.";
+        }
+        else
+        {
+            mensaje = "Error al obtener los Anexos ❌";
+        }
+        Console.WriteLine($"Auditando {item.Codigo}");
+        MostrarModalAuditoria();
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+    }
+}

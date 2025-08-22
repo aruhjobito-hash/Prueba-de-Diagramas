@@ -1,0 +1,20 @@
+﻿@inject NavigationManager UriHelper
+@page "/"
+
+<AuthorizeView>
+    <Authorized Context="AuthenticationState">
+        <h1>Inicio</h1>
+        <h5>Bienvenido a la Nueva Aplicación de la Cooperativa León XIII</h5>
+    </Authorized>
+    <NotAuthorized> 
+        <h3>Debe Identificarse primero ante de poder Acceder a la Aplicación</h3>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    protected override void OnInitialized()
+    {
+        UriHelper.NavigateTo("login");
+     }
+ } 

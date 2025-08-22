@@ -1,0 +1,148 @@
+﻿@using LeonXIIICore.Pages.Sistema
+@*<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">LeonXIII</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="counter">
+                <span class="oi oi-plus" aria-hidden="true"></span> Counter
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="fetchdata">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+code {
+
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+}
+*@
+
+
+<!-- Popup for color selection -->
+<div class="color-popup @ColorPopupCssClass">
+    <div class="popup-content">
+        <!-- Color boxes to change the background color -->
+        <div class="color-box"
+             style="background-color: @AppColorsBackground.AmarilloPastel; color: @textColor;"
+             @onclick="() => ChangeBackgroundColor(AppColorsBackground.AmarilloPastel)">
+        </div>
+        <div class="color-box"
+             style="background-color: @AppColorsBackground.AmarilloResalte; color: @textColor;"
+             @onclick="() => ChangeBackgroundColor(AppColorsBackground.AmarilloResalte)">
+        </div>
+        <div class="color-box"
+             style="background-color: @AppColorsBackground.VerdeOscuroTexto; color: @textColor;"
+             @onclick="() => ChangeBackgroundColor(AppColorsBackground.VerdeOscuroTexto)">
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar Navigation Menu -->
+<div class="page-container">
+    <div class="page-sidebar-wrapper">
+        <div class="top-row ps-3 navbar navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" @onclick="ToggleColorPopup">LeonXIII</a>               
+
+                <!-- Navigation Menu Toggler -->
+                <button title="Navigation menu" class="color-box" @onclick="ToggleNavMenu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+            <div>
+                <!-- Engine Icon Button (Right Side) -->
+                <button title="Change colors" class="navbar-toggler" @onclick="ToggleColorPopup">
+                    <i class="bi bi-gear"></i> <!-- Bootstrap gear icon -->
+                </button>
+            </div>
+        </div>
+        <!-- END SIDEBAR -->
+        <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+        <!-- DOC: Change data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+        <div class="page-sidebar navbar-collapse collapse">
+            <!-- BEGIN SIDEBAR MENU -->
+            <!-- DOC: Apply "page-sidebar-menu-light" class right after "page-sidebar-menu" to enable light sidebar menu style(without borders) -->
+            <!-- DOC: Apply "page-sidebar-menu-hover-submenu" class right after "page-sidebar-menu" to enable hoverable(hover vs accordion) sub menu mode -->
+            <!-- DOC: Apply "page-sidebar-menu-closed" class right after "page-sidebar-menu" to collapse("page-sidebar-closed" class must be applied to the body element) the sidebar sub menu mode -->
+            <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+            <!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
+            <!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+            <ul class="page-sidebar-menu  page-header-fixed page-sidebar-menu-hover-submenu " data-keep-expanded="false" data-auto-scroll="true" data-slide-speed="200">
+                <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+                    <nav class="flex-column">
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                                <span class="oi oi-home" aria-hidden="true"></span> Home
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="counter">
+                                <span class="oi oi-plus" aria-hidden="true"></span> Counter
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="fetchdata">
+                                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+                            </NavLink>
+                        </div>
+                    </nav>
+                </div>
+            </ul>
+        </div>
+    </div>
+</div>
+@code {
+    private bool isColorPopupVisible = false; // Determines if the color popup is visible
+    private string ColorPopupCssClass => isColorPopupVisible ? "show-popup" : "hide-popup"; // Show or hide the popup
+
+    private bool collapseNavMenu = true; // Controls whether the navbar menu is collapsed
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private string backgroundColor = AppColorsBackground.AmarilloPastel; // Initial background color
+    private string textColor = AppColorsText.AmarilloResalte; // Initial text color
+
+    // Toggles the visibility of the color popup
+    private void ToggleColorPopup()
+    {
+        isColorPopupVisible = !isColorPopupVisible;
+    }
+
+    // Toggles the visibility of the navbar menu
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    // Changes the background color when a color box is clicked
+    private void ChangeBackgroundColor(string color)
+    {
+        backgroundColor = color;
+        // Optionally, change text color as well
+        StateHasChanged();  // Refresh the UI after the change
+    }
+}

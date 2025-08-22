@@ -1,0 +1,230 @@
+﻿@page "/AngularDemo"
+@using Models.Sistema
+@using Clases.Sistema
+@inject HttpClient Http
+@inherits MainLayout
+@using System.Security.Claims
+@using LeonXIIICore
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserClaimsService ClaimsService
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light portlet-fit">
+            <div class="header-grupo-plantilla">
+                <div class="header-content">
+                    <div class="caption mb-0">
+                        <i class="icon-settings"></i>
+                        <span class="titulo-seccion-plantilla">
+                            Lista de requerimientos
+                        </span>
+                    </div>
+                </div>
+
+                <div class="header-content">
+                    <div class="actions">
+                        @* <button class="btn green">
+                            Nuevo
+                            <i class="fa fa-plus"></i>
+                        </button>*@
+                    </div>
+                </div>
+            </div>
+            <div class="blazor-content portlet-body">
+                <div class="portlet-body">
+                    Contenido de la página
+                </div>
+            </div>
+            <div class="blazor-content portlet-body">
+                <div class="portlet-body">
+                    Contenido de la página @dato
+
+                    <table class="mat-mdc-table" style="border-radius: 6px; width: 100%;">
+                        <thead>
+                            <tr class="mat-mdc-header-row">
+                                <th class="mat-mdc-header-cell" style="color: #007d36;background-color: #f3fff8;">Cuadro de Evaluación Curricular</th>
+                                <th class="mat-mdc-header-cell">Puntajes Parciales</th>
+                                <th class="mat-mdc-header-cell">Puntaje Máximo</th>
+                                <th class="mat-mdc-header-cell">Ponderación Final</th>
+                                <th class="mat-mdc-header-cell">Nota Final</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < dataSource2.Count; i++)
+                            {
+                                var element = dataSource2[i];
+                                <tr class="mat-mdc-row" style="@GetRowStyle(i)">
+                                    <td class="mat-mdc-cell">@element.Descripcion</td>
+                                    <td class="mat-mdc-cell" style="text-align: center;">@element.PuntajeParcial</td>
+                                    <td class="mat-mdc-cell" style="text-align: center;">@element.PuntajeMinimo</td>
+                                    <td class="mat-mdc-cell" style="text-align: center;">@element.PonderacionFinal</td>
+                                    <td class="mat-mdc-cell" style="text-align: center; color:#1365a4;font-weight: 500;font-size: 16px;">@element.NotaFinal</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                                        
+                        <div class="container">
+                            <h1>CSS Components Demo</h1>
+
+                            <!-- Buttons Section -->
+                            <section>
+                                <h2>Buttons</h2>
+                                <button class="btn btn-primary">Primary Button</button>
+                                <button class="btn btn-secondary">Secondary Button</button>
+                                <button class="btn btn-success">Success Button</button>
+                                <button class="btn btn-danger">Danger Button</button>
+                                <button class="btn btn-warning">Warning Button</button>
+                                <button class="btn btn-info">Info Button</button>
+                                <button class="btn btn-light">Light Button</button>
+                                <button class="btn btn-dark">Dark Button</button>
+
+                                <h3>Button Sizes</h3>
+                                <button class="btn btn-primary btn-lg">Large Button</button>
+                                <button class="btn btn-primary">Regular Button</button>
+                                <button class="btn btn-primary btn-sm">Small Button</button>
+                            </section>
+
+                            <!-- Alerts Section -->
+                            <section>
+                                <h2>Alerts</h2>
+                                <div class="alert alert-primary">Primary Alert</div>
+                                <div class="alert alert-secondary">Secondary Alert</div>
+                                <div class="alert alert-success">Success Alert</div>
+                                <div class="alert alert-danger">Danger Alert</div>
+                                <div class="alert alert-warning">Warning Alert</div>
+                                <div class="alert alert-info">Info Alert</div>
+                                <div class="alert alert-light">Light Alert</div>
+                                <div class="alert alert-dark">Dark Alert</div>
+                            </section>
+
+                            <!-- Tables Section -->
+                            <section>
+                                <h2>Tables</h2>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>First Name</th>
+                                            <th>Last Name</th>
+                                            <th>Username</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>1</td>
+                                            <td>Mark</td>
+                                            <td>Otto</td>                                           
+                                        </tr>
+                                        <tr>
+                                            <td>2</td>
+                                            <td>Jacob</td>
+                                            <td>Thornton</td>                                            
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <h3>Table Variants</h3>
+                                <table class="table table-primary">
+                                    <thead>
+                                        <tr>
+                                            <th>Primary Table</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>Example row</td></tr>
+                                    </tbody>
+                                </table>
+
+                                <table class="table table-success">
+                                    <thead>
+                                        <tr>
+                                            <th>Success Table</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>Example row</td></tr>
+                                    </tbody>
+                                </table>
+                            </section>
+
+                            <!-- Cards Section -->
+                            <section>
+                                <h2>Cards</h2>
+                                <div class="card" style="width: 18rem;">
+                                    <div class="card-header">
+                                        Featured
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Card Title</h5>
+                                        <p class="card-text">Some quick example text to build on the card title.</p>
+                                        <a href="#" class="btn btn-primary">Go somewhere</a>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Navbar Section -->
+                            <section>
+                                <h2>Navbar</h2>
+                                <nav class="navbar">
+                                    <a class="navbar-brand" href="#">Navbar</a>
+                                    <div>
+                                        <a href="#" class="btn btn-outline-secondary">Home</a>
+                                        <a href="#" class="btn btn-outline-secondary">Features</a>
+                                        <a href="#" class="btn btn-outline-secondary">Pricing</a>
+                                    </div>
+                                </nav>
+                            </section>
+
+                            <!-- Utility Classes -->
+                            <section>
+                                <h2>Utility Classes</h2>
+                                <div class="text-primary">Primary Text</div>
+                                <div class="text-success">Success Text</div>
+                                <div class="text-danger">Danger Text</div>
+
+                                <div class="bg-primary text-white p-2">Primary Background</div>
+                                <div class="bg-success text-white p-2">Success Background</div>
+                                <div class="bg-danger text-white p-2">Danger Background</div>
+                            </section>
+                        </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string dato;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ClaimsService.InitializeAsync();
+
+        dato = ClaimsService.GetDatoTrabajadorByIdUser("SIdUser"); // works case-insensitively
+    }
+
+    class Element
+    {
+        public string Descripcion { get; set; }
+        public double PuntajeParcial { get; set; }
+        public double PuntajeMinimo { get; set; }
+        public double PonderacionFinal { get; set; }
+        public double NotaFinal { get; set; }
+    }
+
+    List<Element> dataSource2 = new()
+    {
+        new Element { Descripcion = "Item 1", PuntajeParcial = 18.5, PuntajeMinimo = 20, PonderacionFinal = 95, NotaFinal = 19.5 },
+        new Element { Descripcion = "Item 2", PuntajeParcial = 17.0, PuntajeMinimo = 20, PonderacionFinal = 90, NotaFinal = 18.0 }
+    };
+
+    string GetRowStyle(int index)
+    {
+        return index % 2 == 0 ? "background-color: #f9f9f9;" : "";
+    }
+
+
+}

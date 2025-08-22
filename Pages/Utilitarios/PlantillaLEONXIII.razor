@@ -1,0 +1,799 @@
+﻿@page "/Plantilla"  
+@using Models.Sistema       
+@using Clases.Sistema
+@inject HttpClient Http
+@inherits MainLayout
+@using System.Security.Claims
+@using LeonXIIICore
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserClaimsService ClaimsService
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light portlet-fit">
+            <div class="header-grupo-plantilla">
+                <div class="header-content">
+                    <div class="caption mb-0">
+                        <i class="icon-settings"></i>
+                        <span class="titulo-seccion-plantilla">
+                            Lista de requerimientos
+                        </span>
+                    </div>
+                </div>
+
+                <div class="header-content ">
+                    <div class="actions">
+                       @* <button class="btnbla green">
+                            Nuevo
+                            <i class="fa fa-plus"></i>
+                        </button>*@
+                    </div>
+                </div>
+            </div>
+            <div class="blazor-content portlet-body">
+                <div class="portlet-body">
+                    Contenido de la página
+                </div>
+            </div>
+            <div class="blazor-content portlet-body">
+                <div class="portlet-body">
+                    Contenido de la página @dato
+                    <div class="section-container">
+        <div class="chat-header">Document Structure</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-html"><html>root element</html></div>
+                <div class="container"><pre><code>&lt;html&gt;root element&lt;/html&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-head"><head>metadata container</head></div>
+                <div class="container"><pre><code>&lt;head&gt;metadata container&lt;/head&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-body">
+					<body>content container
+					</body>
+				</div>
+                <div class="container"><pre><code>&lt;body&gt;content container&lt;/body&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Content Sectioning</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-h1"><h1>Heading 1</h1></div>
+                <div class="container"><pre><code>&lt;h1&gt;Heading 1&lt;/h1&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-h2"><h2>Heading 2</h2></div>
+                <div class="container"><pre><code>&lt;h2&gt;Heading 2&lt;/h2&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-h3"><h3>Heading 3</h3></div>
+                <div class="container"><pre><code>&lt;h3&gt;Heading 3&lt;/h3&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-h4"><h4>Heading 4</h4></div>
+                <div class="container"><pre><code>&lt;h4&gt;Heading 4&lt;/h4&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-h5"><h5>Heading 5</h5></div>
+                <div class="container"><pre><code>&lt;h5&gt;Heading 5&lt;/h5&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-h6"><h6>Heading 6</h6></div>
+                <div class="container"><pre><code>&lt;h6&gt;Heading 6&lt;/h6&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-header"><header>header</header></div>
+                <div class="container"><pre><code>&lt;header&gt;header&lt;/header&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-footer"><footer>footer</footer></div>
+                <div class="container"><pre><code>&lt;footer&gt;footer&lt;/footer&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-main"><main>main</main></div>
+                <div class="container"><pre><code>&lt;main&gt;main&lt;/main&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-section"><section>section</section></div>
+                <div class="container"><pre><code>&lt;section&gt;section&lt;/section&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-article"><article>article</article></div>
+                <div class="container"><pre><code>&lt;article&gt;article&lt;/article&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-aside"><aside>aside</aside></div>
+                <div class="container"><pre><code>&lt;aside&gt;aside&lt;/aside&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-nav"><nav>nav</nav></div>
+                <div class="container"><pre><code>&lt;nav&gt;nav&lt;/nav&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-address"><address>address</address></div>
+                <div class="container"><pre><code>&lt;address&gt;address&lt;/address&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Text Content</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-p"><p>Paragraph</p></div>
+                <div class="container"><pre><code>&lt;p&gt;Paragraph&lt;/p&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-pre"><pre>Preformatted text
+Line 2
+    Indented</pre></div>
+                <div class="container"><pre><code>&lt;pre&gt;Preformatted text
+Line 2
+    Indented&lt;/pre&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-blockquote"><blockquote>Block quotation</blockquote></div>
+                <div class="container"><pre><code>&lt;blockquote&gt;Block quotation&lt;/blockquote&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-ol"><ol><li>Ordered list</li><li>Item 2</li></ol></div>
+                <div class="container"><pre><code>&lt;ol&gt;<span class="html-entity">&lt;li&gt;</span>Ordered list<span class="html-entity">&lt;/li&gt;</span>
+<span class="html-entity">&lt;li&gt;</span>Item 2<span class="html-entity">&lt;/li&gt;</span>&lt;/ol&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-ul"><ul><li>Unordered list</li><li>Item 2</li></ul></div>
+                <div class="container"><pre><code>&lt;ul&gt;<span class="html-entity">&lt;li&gt;</span>Unordered list<span class="html-entity">&lt;/li&gt;</span>
+<span class="html-entity">&lt;li&gt;</span>Item 2<span class="html-entity">&lt;/li&gt;</span>&lt;/ul&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-dl"><dl><dt>Term</dt><dd>Description</dd></dl></div>
+                <div class="container"><pre><code>&lt;dl&gt;<span class="html-entity">&lt;dt&gt;</span>Term<span class="html-entity">&lt;/dt&gt;</span>
+<span class="html-entity">&lt;dd&gt;</span>Description<span class="html-entity">&lt;/dd&gt;</span>&lt;/dl&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-div"><div>Division</div></div>
+                <div class="container"><pre><code>&lt;div&gt;Division&lt;/div&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-span"><span>Span</span></div>
+                <div class="container"><pre><code>&lt;span&gt;Span&lt;/span&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Inline Text Semantics</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-a"><a href="#" class="mat-link">Hyperlink</a></div>
+                <div class="container"><pre><code>&lt;a href="#"&gt;Hyperlink&lt;/a&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-strong"><strong>strong</strong></div>
+                <div class="container"><pre><code>&lt;strong&gt;strong&lt;/strong&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-em"><em>em</em></div>
+                <div class="container"><pre><code>&lt;em&gt;em&lt;/em&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-b"><b>b</b></div>
+                <div class="container"><pre><code>&lt;b&gt;b&lt;/b&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-i"><i>i</i></div>
+                <div class="container"><pre><code>&lt;i&gt;i&lt;/i&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-u"><u>u</u></div>
+                <div class="container"><pre><code>&lt;u&gt;u&lt;/u&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-s"><s>s</s></div>
+                <div class="container"><pre><code>&lt;s&gt;s&lt;/s&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-mark"><mark>mark</mark></div>
+                <div class="container"><pre><code>&lt;mark&gt;mark&lt;/mark&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-small"><small>small</small></div>
+                <div class="container"><pre><code>&lt;small&gt;small&lt;/small&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-sup"><sup>sup</sup></div>
+                <div class="container"><pre><code>&lt;sup&gt;sup&lt;/sup&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-sub"><sub>sub</sub></div>
+                <div class="container"><pre><code>&lt;sub&gt;sub&lt;/sub&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-code"><code>code</code></div>
+                <div class="container"><pre><code>&lt;code&gt;code&lt;/code&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-kbd"><kbd>kbd</kbd></div>
+                <div class="container"><pre><code>&lt;kbd&gt;kbd&lt;/kbd&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-samp"><samp>samp</samp></div>
+                <div class="container"><pre><code>&lt;samp&gt;samp&lt;/samp&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-var"><var>var</var></div>
+                <div class="container"><pre><code>&lt;var&gt;var&lt;/var&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-time"><time>time</time></div>
+                <div class="container"><pre><code>&lt;time&gt;time&lt;/time&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-data"><data value="data">data</data></div>
+                <div class="container"><pre><code>&lt;data value="data"&gt;data&lt;/data&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-abbr"><abbr title="abbreviation">abbr</abbr></div>
+                <div class="container"><pre><code>&lt;abbr title="abbreviation"&gt;abbr&lt;/abbr&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-cite"><cite>cite</cite></div>
+                <div class="container"><pre><code>&lt;cite&gt;cite&lt;/cite&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-q"><q>Quote</q></div>
+                <div class="container"><pre><code>&lt;q&gt;Quote&lt;/q&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-dfn"><dfn>dfn</dfn></div>
+                <div class="container"><pre><code>&lt;dfn&gt;dfn&lt;/dfn&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-span">漢kan</div>
+                <div class="container"><pre><code>漢kan</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Image & Multimedia</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-img"><img src="https://via.placeholder.com/150" alt="Image" class="demo-media"></div>
+                <div class="container"><pre><code>&lt;img src="https://via.placeholder.com/150" alt="Image"&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-figure"><figure><figcaption>figcaption</figcaption></figure></div>
+                <div class="container"><pre><code>&lt;figure&gt;<span class="html-entity">&lt;figcaption&gt;</span>figcaption<span class="html-entity">&lt;/figcaption&gt;</span>&lt;/figure&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-audio"><audio controls><source src="sample.mp3" type="audio/mpeg">audio</audio></div>
+                <div class="container"><pre><code>&lt;audio controls&gt;<span class="html-entity">&lt;source src="sample.mp3" type="audio/mpeg"&gt;</span>audio<span class="html-entity">&lt;/source&gt;</span>&lt;/audio&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-video"><video controls><source src="sample.mp4" type="video/mp4">video</video></div>
+                <div class="container"><pre><code>&lt;video controls&gt;<span class="html-entity">&lt;source src="sample.mp4" type="video/mp4"&gt;</span>video<span class="html-entity">&lt;/source&gt;</span>&lt;/video&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-picture"><picture><source srcset="sample.webp" type="image/webp">picture</picture></div>
+                <div class="container"><pre><code>&lt;picture&gt;<span class="html-entity">&lt;source srcset="sample.webp" type="image/webp"&gt;</span>picture<span class="html-entity">&lt;/source&gt;</span>&lt;/picture&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-canvas"><canvas width="150" height="150">canvas</canvas></div>
+                <div class="container"><pre><code>&lt;canvas width="150" height="150"&gt;canvas&lt;/canvas&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-source"><source src="sample.mp3" type="audio/mpeg"></div>
+                <div class="container"><pre><code>&lt;source src="sample.mp3" type="audio/mpeg"&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Scripting</div>
+        <div class="chat-message">
+            @*<div class="row">
+                <div class="mat-mdc blazor-script"><script>console.log('script');</script></div>
+                <div class="container"><pre><code>&lt;script&gt;console.log('script');&lt;/script&gt;</code></pre></div>
+            </div><br>*@
+            <div class="row">
+                <div class="mat-mdc blazor-noscript"><noscript>content for non-JS users</noscript></div>
+                <div class="container"><pre><code>&lt;noscript&gt;content for non-JS users&lt;/noscript&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-template"><template>hidden content</template></div>
+                <div class="container"><pre><code>&lt;template&gt;hidden content&lt;/template&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-slot"><slot>shadow DOM placeholder</slot></div>
+                <div class="container"><pre><code>&lt;slot&gt;shadow DOM placeholder&lt;/slot&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Edits</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-del"><del>deleted text</del></div>
+                <div class="container"><pre><code>&lt;del&gt;deleted text&lt;/del&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-ins"><ins>inserted text</ins></div>
+                <div class="container"><pre><code>&lt;ins&gt;inserted text&lt;/ins&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Tables</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-table"><table><caption>caption</caption><thead><tr><th>Header</th><th>Header 2</th></tr></thead><tbody><tr><td>Cell</td><td>Cell 2</td></tr></tbody><tfoot><tr><td>Footer</td><td></td></tr></tfoot></table></div>
+            </div>
+            <div class="row">
+                <div class="container full-width"><pre><code>&lt;table&gt;<span class="html-entity">&lt;caption&gt;</span>caption<span class="html-entity">&lt;/caption&gt;</span>
+                    <span class="html-entity">&lt;thead&gt;</span><span class="html-entity">&lt;tr&gt;</span><span class="html-entity">&lt;th&gt;</span>Header<span class="html-entity">&lt;/th&gt;</span><span class="html-entity">&lt;th&gt;</span>Header 2<span class="html-entity">&lt;/th&gt;</span><span class="html-entity">&lt;/tr&gt;</span><span class="html-entity">&lt;/thead&gt;</span>
+                    <span class="html-entity">&lt;tbody&gt;</span><span class="html-entity">&lt;tr&gt;</span><span class="html-entity">&lt;td&gt;</span>Cell<span class="html-entity">&lt;/td&gt;</span><span class="html-entity">&lt;td&gt;</span>Cell 2<span class="html-entity">&lt;/td&gt;</span><span class="html-entity">&lt;/tr&gt;</span><span class="html-entity">&lt;/tbody&gt;</span>
+                    <span class="html-entity">&lt;tfoot&gt;</span><span class="html-entity">&lt;tr&gt;</span><span class="html-entity">&lt;td&gt;</span>Footer<span class="html-entity">&lt;/td&gt;</span><span class="html-entity">&lt;td&gt;</span><span class="html-entity">&lt;/td&gt;</span><span class="html-entity">&lt;/tr&gt;</span><span class="html-entity">&lt;/tfoot&gt;</span>&lt;/table&gt;</code></pre></div>
+            </div><br>
+        </div>
+
+        <div class="chat-message">
+            <div class="row">
+                <div>
+                    <table class="tabla-requerimientos">
+                      <thead>
+                        <tr>
+                          <th>Fecha Atención</th>
+                          <th>N° requerimiento</th>
+                          <th>Agencia</th>
+                          <th>Área</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><span class="fecha-hora"><span class="hora">09:02 AM</span><br><span class="fecha">2025-05-24</span></span></td>
+                          <td>1</td>
+                          <td>OFICINA PRINCIPAL</td>
+                          <td>SISTEMAS</td>
+                        </tr>
+                        <tr>
+                          <td><span class="fecha-hora"><span class="hora">09:45 AM</span><br><span class="fecha">2025-05-24</span></span></td>
+                          <td>2</td>
+                          <td>OFICINA PRINCIPAL</td>
+                          <td>SISTEMAS</td>
+                        </tr>
+                        <tr>
+                          <td><span class="fecha-hora"><span class="hora">12:04 PM</span><br><span class="fecha">2025-05-24</span></span></td>
+                          <td>3</td>
+                          <td>OFICINA PRINCIPAL</td>
+                          <td>SISTEMAS</td>
+                        </tr>
+                        <tr>
+                          <td><span class="fecha-hora"><span class="hora">12:29 PM</span><br><span class="fecha">2025-05-24</span></span></td>
+                          <td>4</td>
+                          <td>OFICINA PRINCIPAL</td>
+                          <td>SISTEMAS</td>
+                        </tr>
+                        <tr>
+                          <td><span class="fecha-hora"><span class="hora">12:39 PM</span><br><span class="fecha">2025-05-24</span></span></td>
+                          <td>5</td>
+                          <td>OFICINA PRINCIPAL</td>
+                          <td>SISTEMAS</td>
+                        </tr>
+                        <tr>
+                          <td><span class="fecha-hora"><span class="hora">12:43 PM</span><br><span class="fecha">2025-05-24</span></span></td>
+                          <td>6</td>
+                          <td>OFICINA PRINCIPAL</td>
+                          <td>SISTEMAS</td>
+                        </tr>
+                        <tr>
+                          <td><span class="fecha-hora"><span class="hora">03:45 PM</span><br><span class="fecha">2025-05-27</span></span></td>
+                          <td>7</td>
+                          <td>OFICINA PRINCIPAL</td>
+                          <td>SISTEMAS</td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="4">Items per page: 20</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="container full-width">
+                    <pre><code>
+                        &lt;table class="tabla-requerimientos"&gt;
+                          &lt;thead&gt;
+                            &lt;tr&gt;
+                              &lt;th&gt;Fecha Atención&lt;/th&gt;
+                              &lt;th&gt;N° requerimiento&lt;/th&gt;
+                              &lt;th&gt;Agencia&lt;/th&gt;
+                              &lt;th&gt;Área&lt;/th&gt;
+                            &lt;/tr&gt;
+                          &lt;/thead&gt;
+                          &lt;tbody&gt;
+                            &lt;tr&gt;
+                              &lt;td&gt;&lt;span class="fecha-hora"&gt;&lt;span class="hora"&gt;09:02 AM&lt;/span&gt;&lt;br&gt;&lt;span class="fecha"&gt;2025-05-24&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;
+                              &lt;td&gt;1&lt;/td&gt;
+                              &lt;td&gt;OFICINA PRINCIPAL&lt;/td&gt;
+                              &lt;td&gt;SISTEMAS&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                              &lt;td&gt;&lt;span class="fecha-hora"&gt;&lt;span class="hora"&gt;09:45 AM&lt;/span&gt;&lt;br&gt;&lt;span class="fecha"&gt;2025-05-24&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;
+                              &lt;td&gt;2&lt;/td&gt;
+                              &lt;td&gt;OFICINA PRINCIPAL&lt;/td&gt;
+                              &lt;td&gt;SISTEMAS&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;!-- Repite para las demás filas... --&gt;
+                          &lt;/tbody&gt;
+                          &lt;tfoot&gt;
+                            &lt;tr&gt;
+                              &lt;td colspan="4"&gt;Items per page: 20&lt;/td&gt;
+                            &lt;/tr&gt;
+                          &lt;/tfoot&gt;
+                        &lt;/table&gt;
+                </code></pre></div>
+            </div><br>
+        </div>
+
+
+
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Forms</div>
+        <div class="chat-message">
+            <div class="row">
+                            <div class="mat-mdc blazor-form"><form class="demo-form"><fieldset><legend>Group</legend><label>Text: <input type="text" class="mat-input"></label><label>Search: <input type="search" class="mat-input"></label><label>Email: <input type="email" class="mat-input"></label><label>URL: <input type="url" class="mat-input"></label><label>Tel: <input type="tel" class="mat-input"></label><label>Number: <input type="number" class="mat-input"></label><label>Range: <input type="range" class="mat-input"></label><label>Color: <input type="color" class="mat-input"></label><label>Date: <input type="date" class="mat-input"></label><label>Time: <input type="time" class="mat-input"></label><label>Datetime: <input type="datetime-local" class="mat-input"></label><label>Month: <input type="month" class="mat-input"></label><label>Week: <input type="week" class="mat-input"></label><label>File: <input type="file" class="mat-input"></label><label>Checkbox: <input type="checkbox" class="mat-checkbox"></label><label>Radio: <input type="radio" class="mat-radio"></label><label>Hidden: <input type="hidden" class="mat-input"></label><label>Password: <input type="password" class="mat-input"></label><input type="reset" value="Reset" class="mat-button btnbla btn-secondary"><input type="submit" value="Submit" class="mat-button btnbla btn-primary"><input type="button" value="Button" class="mat-button btnbla btn-primary"><input type="image" src="https://via.placeholder.com/50" alt="Image Button" class="mat-button"><input list="options" class="mat-input"><datalist id="options"><option value="Option 1"></option><option value="Option 2"></option><option value="Option 3"></option></datalist><select class="mat-select"><option>Option 1</option><option>Option 2</option><option>Option 3</option></select><textarea class="mat-textarea"></textarea><progress value="50" max="100" class="mat-progress">progress</progress><meter value="50" min="0" max="100" class="mat-meter">meter</meter><output class="mat-output">42</output><button class="mat-button btnbla btn-primary">button</button></fieldset></form></div>
+            </div>
+            <div class="row">
+                <div class="container full-width"><pre><code>&lt;form class="demo-form"&gt;<span class="html-entity">&lt;fieldset&gt;</span><span class="html-entity">&lt;legend&gt;</span>Group<span class="html-entity">&lt;/legend&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Text: <span class="html-entity">&lt;input type="text"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Search: <span class="html-entity">&lt;input type="search"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Email: <span class="html-entity">&lt;input type="email"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>URL: <span class="html-entity">&lt;input type="url"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Tel: <span class="html-entity">&lt;input type="tel"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Number: <span class="html-entity">&lt;input type="number"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Range: <span class="html-entity">&lt;input type="range"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Color: <span class="html-entity">&lt;input type="color"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Date: <span class="html-entity">&lt;input type="date"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Time: <span class="html-entity">&lt;input type="time"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Datetime: <span class="html-entity">&lt;input type="datetime-local"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Month: <span class="html-entity">&lt;input type="month"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Week: <span class="html-entity">&lt;input type="week"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>File: <span class="html-entity">&lt;input type="file"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Checkbox: <span class="html-entity">&lt;input type="checkbox"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Radio: <span class="html-entity">&lt;input type="radio"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Hidden: <span class="html-entity">&lt;input type="hidden"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;label&gt;</span>Password: <span class="html-entity">&lt;input type="password"&gt;</span><span class="html-entity">&lt;/label&gt;</span>
+                <span class="html-entity">&lt;input type="reset" value="Reset"&gt;</span>
+                <span class="html-entity">&lt;input type="submit" value="Submit"&gt;</span>
+                <span class="html-entity">&lt;input type="button" value="Button"&gt;</span>
+                <span class="html-entity">&lt;input type="image" src="https://via.placeholder.com/50" alt="Image Button"&gt;</span>
+                <span class="html-entity">&lt;input list="options"&gt;</span>
+                <span class="html-entity">&lt;datalist id="options"&gt;</span><span class="html-entity">&lt;option value="Option 1"&gt;</span><span class="html-entity">&lt;/option&gt;</span>
+                <span class="html-entity">&lt;option value="Option 2"&gt;</span><span class="html-entity">&lt;/option&gt;</span>
+                <span class="html-entity">&lt;option value="Option 3"&gt;</span><span class="html-entity">&lt;/option&gt;</span><span class="html-entity">&lt;/datalist&gt;</span>
+                <span class="html-entity">&lt;select&gt;</span><span class="html-entity">&lt;option&gt;</span>Option 1<span class="html-entity">&lt;/option&gt;</span>
+                <span class="html-entity">&lt;option&gt;</span>Option 2<span class="html-entity">&lt;/option&gt;</span>
+                <span class="html-entity">&lt;option&gt;</span>Option 3<span class="html-entity">&lt;/option&gt;</span><span class="html-entity">&lt;/select&gt;</span>
+                <span class="html-entity">&lt;textarea&gt;</span><span class="html-entity">&lt;/textarea&gt;</span>
+                <span class="html-entity">&lt;progress value="50" max="100"&gt;</span>progress<span class="html-entity">&lt;/progress&gt;</span>
+                <span class="html-entity">&lt;meter value="50" min="0" max="100"&gt;</span>meter<span class="html-entity">&lt;/meter&gt;</span>
+                <span class="html-entity">&lt;output&gt;</span>42<span class="html-entity">&lt;/output&gt;</span>
+                <span class="html-entity">&lt;button&gt;</span>button<span class="html-entity">&lt;/button&gt;</span><span class="html-entity">&lt;/fieldset&gt;</span>&lt;/form&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Interactive</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-details"><details><summary class="mat-summary">summary</summary>Toggleable content</details></div>
+                <div class="container"><pre><code>&lt;details&gt;<span class="html-entity">&lt;summary&gt;</span>summary<span class="html-entity">&lt;/summary&gt;</span>Toggleable content&lt;/details&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-dialog"><dialog id="dialog-example">Popup (use JavaScript)</dialog></div>
+                <div class="container"><pre><code>&lt;dialog id="dialog-example"&gt;Popup (use JavaScript)&lt;/dialog&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-menu"><menu><li>Menu Item 1</li><li>Menu Item 2</li></menu></div>
+                <div class="container"><pre><code>&lt;menu&gt;<span class="html-entity">&lt;li&gt;</span>Menu Item 1<span class="html-entity">&lt;/li&gt;</span>
+<span class="html-entity">&lt;li&gt;</span>Menu Item 2<span class="html-entity">&lt;/li&gt;</span>&lt;/menu&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Web Components</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-custom-element"><custom-element>Shadow DOM content</custom-element></div>
+                <div class="container"><pre><code>&lt;custom-element&gt;Shadow DOM content&lt;/custom-element&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+	  <div class="chat-header">Abrir Modal CRUD</div>
+	  <div class="chat-message">
+		<div class="row">
+		  <div class="mat-mdc">
+            <button class="btnbla blazor-button primary" onclick="openCrudModal()">Abrir Modal CRUD</button>
+		  </div>
+		  <div class="container">
+            <pre><code>&lt;button class="btnbla blazor-button primary" onclick="openCrudModal()"&gt;Abrir Modal CRUD&lt;/button&gt;</code></pre>
+		  </div>
+		</div>
+	  </div>
+	</div>
+
+
+    <div class="section-container">
+        <div class="chat-header">Graph (Chart.js)</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-canvas"><canvas class="graph-container" width="300" height="300"></canvas></div>
+                <div class="container"><pre><code>&lt;canvas class="graph-container" width="300" height="300"&gt;&lt;/canvas&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="chat-header">Additional HTML Elements</div>
+        <div class="chat-message">
+            <div class="row">
+                <div class="mat-mdc blazor-base"><base href="/"></div>
+                <div class="container"><pre><code>&lt;base href="/"&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-link"><link rel="stylesheet" href="styles.css"></div>
+                <div class="container"><pre><code>&lt;link rel="stylesheet" href="styles.css"&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-meta"><meta name="description" content="Example"></div>
+                <div class="container"><pre><code>&lt;meta name="description" content="Example"&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-style"><style>body { background: white; }</style></div>
+                <div class="container"><pre><code>&lt;style&gt;body { background: white; }&lt;/style&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-title"><title>Document Title</title></div>
+                <div class="container"><pre><code>&lt;title&gt;Document Title&lt;/title&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-br"><br></div>
+                <div class="container"><pre><code>&lt;br&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-hr"><hr></div>
+                <div class="container"><pre><code>&lt;hr&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-area"><area shape="rect" coords="0,0,50,50" href="#" alt="Area"></div>
+                <div class="container"><pre><code>&lt;area shape="rect" coords="0,0,50,50" href="#" alt="Area"&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-map"><map name="example-map"><area shape="rect" coords="0,0,50,50" href="#"></map></div>
+                <div class="container"><pre><code>&lt;map name="example-map"&gt;<span class="html-entity">&lt;area shape="rect" coords="0,0,50,50" href="#"&gt;</span>&lt;/map&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-bdi"><bdi>بدی</bdi></div>
+                <div class="container"><pre><code>&lt;bdi&gt;بدی&lt;/bdi&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-bdo"><bdo dir="rtl">Right to Left</bdo></div>
+                <div class="container"><pre><code>&lt;bdo dir="rtl"&gt;Right to Left&lt;/bdo&gt;</code></pre></div>
+            </div><br>
+            @* <div class="row">
+                <div class="mat-mdc blazor-wbr"><wbr>LongWord<wbr>Break</wbr></div>
+                <div class="container"><pre><code>&lt;wbr&gt;LongWord&lt;wbr&gt;Break&lt;/wbr&gt;</code></pre></div>
+            </div><br> *@
+            <div class="row">
+                <div class="mat-mdc blazor-keygen"><keygen name="security"></div>
+                <div class="container"><pre><code>&lt;keygen name="security"&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-optgroup"><optgroup label="Group 1"><option>Option 1</option></optgroup></div>
+                <div class="container"><pre><code>&lt;optgroup label="Group 1"&gt;<span class="html-entity">&lt;option&gt;</span>Option 1<span class="html-entity">&lt;/option&gt;</span>&lt;/optgroup&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-ruby"><ruby>漢<rt>kan</rt></ruby></div>
+                <div class="container"><pre><code>&lt;ruby&gt;漢<span class="html-entity">&lt;rt&gt;</span>kan<span class="html-entity">&lt;/rt&gt;</span>&lt;/ruby&gt;</code></pre></div>
+            </div><br>
+            <div class="row">
+                <div class="mat-mdc blazor-rp"><rp>(</rp></div>
+                <div class="container"><pre><code>&lt;rp&gt;(&lt;/rp&gt;</code></pre></div>
+            </div><br>
+        </div>
+    </div>
+    
+<div class="section-container">
+  <div class="chat-header">Colores Pastel</div>
+  <div class="chat-message">
+    <div class="row">
+      <div class="mat-mdc" style="background:#fff9c4;">Amarillo</div>
+      <div class="container"><pre><code>&lt;div style="background:#fff9c4;"&gt;Amarillo&lt;/div&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc" style="background:#ffcdd2;">Rojo</div>
+      <div class="container"><pre><code>&lt;div style="background:#ffcdd2;"&gt;Rojo&lt;/div&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc" style="background:#bbdefb;">Azul</div>
+      <div class="container"><pre><code>&lt;div style="background:#bbdefb;"&gt;Azul&lt;/div&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc" style="background:#c8e6c9;">Verde</div>
+      <div class="container"><pre><code>&lt;div style="background:#c8e6c9;"&gt;Verde&lt;/div&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc" style="background:#ffffff;">Blanco</div>
+      <div class="container"><pre><code>&lt;div style="background:#ffffff;"&gt;Blanco&lt;/div&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc" style="background:#cfd8dc;">Negro</div>
+      <div class="container"><pre><code>&lt;div style="background:#cfd8dc;"&gt;Negro&lt;/div&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc" style="background:#d7ccc8;">Marrón</div>
+      <div class="container"><pre><code>&lt;div style="background:#d7ccc8;"&gt;Marrón&lt;/div&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc" style="background:#b3e5fc;">Celeste</div>
+      <div class="container"><pre><code>&lt;div style="background:#b3e5fc;"&gt;Celeste&lt;/div&gt;</code></pre></div>
+    </div><br>
+  </div>
+</div>
+<div class="section-container">
+  <div class="chat-header">Botones con Colores</div>
+  <div class="chat-message">
+    <div class="row">
+      <div class="mat-mdc">
+        <button class="btnbla blazor-button primary">Primary</button>
+        <button class="btnbla blazor-button danger">Danger</button>
+        <button class="btnbla blazor-button success">Success</button>
+        <button class="btnbla blazor-button warning">Warning</button>
+        <button class="btnbla blazor-button info">Info</button>
+        <button class="btnbla blazor-button light">Light</button>
+        <button class="btnbla blazor-button dark">Dark</button>
+        <button class="btnbla blazor-button secondary">Secondary</button>        
+      </div>
+      <div class="container full-width">
+        <pre><code>&lt;button class="btnbla blazor-button primary"&gt;Primary&lt;/button&gt;
+&lt;button class="btnbla blazor-button-outline primary"&gt;Primary&lt;/button&gt;</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="section-container">
+  <div class="chat-header">Botones Redondeados con Contorno</div>
+  <div class="chat-message">
+    <div class="row">
+      <div class="mat-mdc"><button class="btnbla blazor-button-rounded primary">Primary</button></div>
+      <div class="container"><pre><code>&lt;button class="btnbla blazor-button-rounded primary"&gt;Primary&lt;/button&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc"><button class="btnbla blazor-button-rounded success">Success</button></div>
+      <div class="container"><pre><code>&lt;button class="btnbla blazor-button-rounded success"&gt;Success&lt;/button&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc"><button class="btnbla blazor-button-rounded danger">Danger</button></div>
+      <div class="container"><pre><code>&lt;button class="btnbla blazor-button-rounded danger"&gt;Danger&lt;/button&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc"><button class="btnbla blazor-button-rounded warning">Warning</button></div>
+      <div class="container"><pre><code>&lt;button class="btnbla blazor-button-rounded warning"&gt;Warning&lt;/button&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc"><button class="btnbla blazor-button-rounded info">Info</button></div>
+      <div class="container"><pre><code>&lt;button class="btnbla blazor-button-rounded info"&gt;Info&lt;/button&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc"><button class="btnbla blazor-button-rounded light">Light</button></div>
+      <div class="container"><pre><code>&lt;button class="btnbla blazor-button-rounded light"&gt;Light&lt;/button&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc"><button class="btnbla blazor-button-rounded dark">Dark</button></div>
+      <div class="container"><pre><code>&lt;button class="btnbla blazor-button-rounded dark"&gt;Dark&lt;/button&gt;</code></pre></div>
+    </div><br>
+    <div class="row">
+      <div class="mat-mdc"><button class="btnbla blazor-button-rounded secondary">Secondary</button></div>
+      <div class="container"><pre><code>&lt;button class="btnbla blazor-button-rounded secondary"&gt;Secondary&lt;/button&gt;</code></pre></div>
+    </div><br>
+  </div>
+</div>
+<!-- Modal CRUD -->
+<div id="crudModal" class="chat-modal" style="display:none;">
+  <div class="modal-content modal-crud">
+    <span class="close-btnbla" onclick="closeCrudModal()">×</span>
+    <h3>Registro de Usuario</h3>
+    <div class="input-group">
+      <label>Nombres
+        <input type="text" class="mat-input">
+      </label>
+    </div>
+    <div class="input-group">
+      <label>Apellidos
+        <input type="text" class="mat-input">
+      </label>
+    </div>
+    <div class="input-group">
+      <label>Email
+        <input type="email" class="mat-input">
+      </label>
+    </div>
+    <div class="input-group">
+      <label>Fecha de nacimiento
+        <input type="date" class="mat-input">
+      </label>
+    </div>
+    <div class="input-group">
+      <label>Teléfono
+        <input type="tel" class="mat-input">
+      </label>
+    </div>
+    <div class="modal-crud-buttons">
+      <button class="btnbla mat-btn blazor-button success">Guardar</button>
+      <button class="btnbla mat-btn blazor-button warning">Editar</button>
+      <button class="btnbla mat-btn blazor-button danger">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+                </div>
+            </div>  
+        </div>
+    </div>
+</div>
+@*<script>
+    function openCrudModal() {
+      document.getElementById("crudModal").style.display = "flex";
+    }
+    function closeCrudModal() {
+      document.getElementById("crudModal").style.display = "none";
+    }
+</script>*@
+@code {
+    private string dato;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ClaimsService.InitializeAsync();
+
+        dato = ClaimsService.GetDatoTrabajadorByIdUser("SIdUser"); // works case-insensitively
+    }     
+
+    class Element
+    {
+        public string Descripcion { get; set; }
+        public double PuntajeParcial { get; set; }
+        public double PuntajeMinimo { get; set; }
+        public double PonderacionFinal { get; set; }
+        public double NotaFinal { get; set; }
+    }
+
+    List<Element> dataSource2 = new()
+    {
+        new Element { Descripcion = "Item 1", PuntajeParcial = 18.5, PuntajeMinimo = 20, PonderacionFinal = 95, NotaFinal = 19.5 },
+        new Element { Descripcion = "Item 2", PuntajeParcial = 17.0, PuntajeMinimo = 20, PonderacionFinal = 90, NotaFinal = 18.0 }
+    };
+
+    string GetRowStyle(int index)
+    {
+        return index % 2 == 0 ? "background-color: #f9f9f9;" : "";
+    }
+
+
+}
